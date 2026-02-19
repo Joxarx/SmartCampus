@@ -1,0 +1,9 @@
+# Excluir archivos que no deben ir dentro de la imagen Docker
+__pycache__/
+*.pyc
+*.pyo
+.env
+.git
+.gitignore
+*.md
+tests/

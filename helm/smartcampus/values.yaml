@@ -1,0 +1,67 @@
+# ============================================================
+# values.yaml - Valores por defecto del Helm Chart
+# Estos valores son sobreescribibles en el pipeline CD
+# ============================================================
+
+# Número de réplicas del pod (instancias de la app)
+replicaCount: 2
+
+# Configuración de la imagen Docker
+image:
+  repository: ""             # Se inyecta desde el pipeline CI/CD
+  tag: "latest"              # Sobreescrito con el SHA del commit
+  pullPolicy: IfNotPresent   # Solo descarga si no existe localmente
+
+# Nombre del servicio en Kubernetes
+nameOverride: "smartcampus-app"
+fullnameOverride: "smartcampus-services"
+
+# Configuración del Service: cómo se expone la app en K8s
+service:
+  type: LoadBalancer   # Crea un Load Balancer en AWS automáticamente
+  port: 80             # Puerto externo (HTTP estándar)
+  targetPort: 8000     # Puerto interno del contenedor (FastAPI)
+
+# Variables de entorno inyectadas en el contenedor
+env:
+  APP_VERSION: "1.0.0"
+  ENVIRONMENT: "production"
+
+# Límites de recursos del pod (CPU y memoria)
+# Importante: evita que un pod consuma recursos de otros
+resources:
+  requests:
+    cpu: 100m      # 0.1 CPU core mínimo garantizado
+    memory: 128Mi  # 128 MB RAM mínimo garantizado
+  limits:
+    cpu: 250m      # 0.25 CPU core máximo permitido
+    memory: 256Mi  # 256 MB RAM máximo permitido
+
+# Auto-scaling horizontal: ajusta réplicas según uso de CPU
+autoscaling:
+  enabled: true
+  minReplicas: 2    # Siempre al menos 2 pods (alta disponibilidad)
+  maxReplicas: 5    # Máximo 5 pods en pico de tráfico
+  targetCPUUtilizationPercentage: 70  # Escala si CPU > 70%
+
+# Sondas de salud: K8s usa estos endpoints para gestionar pods
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10  # Espera 10s antes del primer chequeo
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Estrategia de actualización: RollingUpdate evita downtime
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1        # Permite 1 pod extra durante la actualización
+    maxUnavailable: 0  # Nunca reduce pods activos durante el update

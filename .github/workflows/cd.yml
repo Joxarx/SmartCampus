@@ -1,0 +1,136 @@
+# ============================================================
+# cd.yml - Pipeline de Entrega Continua (CD)
+# SmartCampus Services - GitHub Actions
+# Disparador: merge/push a la rama main (producción)
+# ============================================================
+
+name: 🚀 CD - Deploy a Kubernetes con Helm
+
+on:
+  push:
+    branches:
+      - main  # Solo despliega cuando hay merge a main
+
+  pull_request:
+    branches:
+      - main  # También en PRs dirigidos a main (para validar)
+    types: [closed]  # Solo cuando el PR está cerrado (merged)
+
+  workflow_dispatch:  # Permite despliegue manual de emergencia
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: smartcampus-services
+  EKS_CLUSTER_NAME: smartcampus-cluster
+  HELM_RELEASE_NAME: smartcampus
+  HELM_CHART_PATH: ./helm/smartcampus
+  NAMESPACE: smartcampus
+
+jobs:
+  # ── JOB 1: Validar Helm Chart ────────────────────────────
+  validate-helm:
+    name: 📋 Validar Helm Chart
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+    steps:
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 🎡 Instalar Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.14.0"
+
+      - name: ✅ Lint del Helm Chart (validación de sintaxis)
+        run: |
+          helm lint ${{ env.HELM_CHART_PATH }}
+          echo "✅ Helm Chart válido"
+
+      - name: 🔍 Template render (previsualizar manifiestos K8s)
+        run: |
+          helm template ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART_PATH }} \
+            --set image.tag=preview \
+            --debug
+
+  # ── JOB 2: Despliegue en Kubernetes ─────────────────────
+  deploy:
+    name: 🚀 Deploy a EKS con Helm
+    runs-on: ubuntu-latest
+    needs: validate-helm  # Solo despliega si Helm es válido
+    environment: production  # Requiere aprobación manual en GitHub
+
+    steps:
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔑 Login a Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Configura kubectl para conectarse al clúster EKS de AWS
+      - name: ☸️ Configurar kubectl para EKS
+        run: |
+          aws eks --region ${{ env.AWS_REGION }} \
+            update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
+          kubectl cluster-info
+
+      - name: 🎡 Instalar Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.14.0"
+
+      # Crea el namespace de Kubernetes si no existe
+      - name: 📁 Crear namespace de Kubernetes
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+
+      # Obtiene el tag de la última imagen en ECR (el commit SHA)
+      - name: 🏷️ Obtener tag de imagen actual
+        id: image-tag
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          echo "registry=${ECR_REGISTRY}" >> $GITHUB_OUTPUT
+
+      # Despliega o actualiza la aplicación usando Helm
+      # helm upgrade --install: instala si no existe, actualiza si existe
+      - name: 📦 Deploy con Helm (upgrade/install)
+        run: |
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART_PATH }} \
+            --namespace ${{ env.NAMESPACE }} \
+            --set image.repository="${{ steps.image-tag.outputs.registry }}/${{ env.ECR_REPOSITORY }}" \
+            --set image.tag="${{ steps.image-tag.outputs.tag }}" \
+            --set environment="${{ vars.ENVIRONMENT || 'production' }}" \
+            --atomic \
+            --timeout 5m \
+            --wait
+          echo "✅ Despliegue completado"
+
+      # Verifica que los pods quedaron en estado Running
+      - name: 🔍 Verificar estado del despliegue
+        run: |
+          echo "--- Pods en el namespace ${{ env.NAMESPACE }} ---"
+          kubectl get pods -n ${{ env.NAMESPACE }}
+          echo "--- Servicios expuestos ---"
+          kubectl get svc -n ${{ env.NAMESPACE }}
+          echo "--- Historial de Helm releases ---"
+          helm history ${{ env.HELM_RELEASE_NAME }} -n ${{ env.NAMESPACE }}
+
+      - name: 📝 Resumen del despliegue
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Release** | \`${{ env.HELM_RELEASE_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Namespace** | \`${{ env.NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image Tag** | \`${{ steps.image-tag.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Clúster** | \`${{ env.EKS_CLUSTER_NAME }}\` |" >> $GITHUB_STEP_SUMMARY

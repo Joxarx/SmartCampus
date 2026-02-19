@@ -1,0 +1,33 @@
+# ============================================================
+# templates/service.yaml - Manifiesto del Service K8s
+# Un Service expone los pods al tráfico de red (interno o externo)
+# ============================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-svc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    # Anotación para AWS: crea un Load Balancer externo (ALB)
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+
+spec:
+  # LoadBalancer: crea un ELB en AWS y expone la app a internet
+  type: {{ .Values.service.type }}
+
+  # Selector: redirige el tráfico a los pods con estos labels
+  selector:
+    app: {{ .Release.Name }}
+    component: api
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.service.port }}          # Puerto externo (80)
+      targetPort: {{ .Values.service.targetPort }} # Puerto del pod (8000)

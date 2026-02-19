@@ -1,0 +1,35 @@
+# ============================================================
+# templates/hpa.yaml - HorizontalPodAutoscaler
+# Escala automáticamente los pods según el uso de CPU/memoria
+# ============================================================
+
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-hpa
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+spec:
+  # El HPA controla el Deployment de la aplicación
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-app
+
+  # Rango de réplicas (definido en values.yaml)
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+
+  # Métrica de escalado: escala cuando CPU supera el umbral
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}

@@ -1,0 +1,19 @@
+# ============================================================
+# templates/configmap.yaml - ConfigMap de la aplicación
+# Almacena configuración no sensible de la aplicación
+# ============================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+data:
+  # Configuración de la aplicación (variables no sensibles)
+  APP_ENV: {{ .Values.env.ENVIRONMENT | quote }}
+  APP_VERSION: {{ .Values.env.APP_VERSION | quote }}
+  LOG_LEVEL: "INFO"

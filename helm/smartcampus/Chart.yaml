@@ -1,0 +1,33 @@
+# ============================================================
+# Chart.yaml - Metadatos del Helm Chart
+# Un Helm Chart es un paquete de manifiestos de Kubernetes
+# ============================================================
+
+apiVersion: v2            # Versión de la API de Helm (v2 = Helm 3)
+name: smartcampus         # Nombre del chart (debe coincidir con la carpeta)
+description: |
+  Helm Chart para SmartCampus Services.
+  Gestiona el ciclo completo de despliegue de la aplicación Python
+  en Kubernetes: Deployment, Service, HPA y ConfigMap.
+
+# LIBRARY = solo plantillas reutilizables
+# APPLICATION = despliega recursos en el clúster (nuestro caso)
+type: application
+
+# Versión del chart (cambiar con cada modificación del chart)
+version: 1.0.0
+
+# Versión de la aplicación que despliega este chart
+appVersion: "1.0.0"
+
+# Información adicional para el portafolio del proyecto
+maintainers:
+  - name: Joshua Arias
+    email: Al03043935@tec.mx
+
+keywords:
+  - smartcampus
+  - fastapi
+  - python
+  - devops
+  - microservices
