@@ -53,7 +53,7 @@ variable "node_desired_count" {
 variable "node_min_count" {
   description = "Número mínimo de nodos (auto-scaling)"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "node_max_count" {

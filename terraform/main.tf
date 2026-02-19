@@ -20,7 +20,7 @@ module "vpc" {
 
   # NAT Gateway: permite que los nodos privados salgan a internet
   enable_nat_gateway   = true
-  single_nat_gateway   = true  # Solo 1 NAT para ahorrar costos en dev
+  single_nat_gateway   = var.environment != "prod"  # 1 NAT en dev/staging, uno por AZ en prod
   enable_dns_hostnames = true  # Necesario para EKS
 
   # Tags especiales requeridos por EKS para descubrir las subredes

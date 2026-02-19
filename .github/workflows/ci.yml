@@ -50,12 +50,12 @@ jobs:
       - name: 🔍 Linting con Flake8 (calidad de código)
         run: |
           # Verifica estilo PEP8 - líneas max 120 caracteres
-          flake8 app/main.py --max-line-length=120 --ignore=E501
+          flake8 app/main.py --max-line-length=120
 
       - name: ✅ Ejecutar pruebas unitarias
         run: |
           cd app
-          python -m pytest --tb=short -v || echo "No hay tests aún, continuando..."
+          python -m pytest tests/ --tb=short -v
 
   # ── JOB 2: Build y Push a ECR ───────────────────────────
   build-and-push:

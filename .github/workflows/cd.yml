@@ -109,7 +109,7 @@ jobs:
             --namespace ${{ env.NAMESPACE }} \
             --set image.repository="${{ steps.image-tag.outputs.registry }}/${{ env.ECR_REPOSITORY }}" \
             --set image.tag="${{ steps.image-tag.outputs.tag }}" \
-            --set environment="${{ vars.ENVIRONMENT || 'production' }}" \
+            --set env.ENVIRONMENT="${{ vars.ENVIRONMENT || 'production' }}" \
             --atomic \
             --timeout 5m \
             --wait

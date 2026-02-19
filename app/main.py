@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 import os
 import platform
 import datetime
+from datetime import timezone
 
 # Instancia principal de la API
 app = FastAPI(
@@ -27,7 +28,7 @@ def root():
     return {
         "message": "¡Bienvenido a SmartCampus Services!",
         "status": "online",
-        "timestamp": datetime.datetime.utcnow().isoformat()
+        "timestamp": datetime.datetime.now(timezone.utc).isoformat()
     }
 
 
@@ -90,5 +91,5 @@ def system_info():
         "environment": ENVIRONMENT,
         "python_version": platform.python_version(),
         "hostname": platform.node(),
-        "timestamp": datetime.datetime.utcnow().isoformat()
+        "timestamp": datetime.datetime.now(timezone.utc).isoformat()
     }
