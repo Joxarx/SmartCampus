@@ -1,36 +1,34 @@
 # SmartCampus Services
 
 University campus management platform (classroom reservations, events, schedules, notifications).
-Full GitOps pipeline: FastAPI app → Docker image → ECR → EKS via Helm.
+Full GitOps pipeline: FastAPI app → Docker image → ECR → EC2 via SSM.
 
 ## Tech Stack
 
-| Layer         | Technology                                      |
-|---------------|-------------------------------------------------|
-| IaC           | Terraform >= 1.5, AWS provider ~> 5.0           |
-| Cloud         | AWS: EKS, ECR, VPC, S3 (state), DynamoDB (locks)|
-| App           | Python 3.11, FastAPI 0.111.0, Uvicorn           |
-| Container     | Docker (multi-stage builds)                     |
-| Orchestration | Kubernetes 1.29 on EKS, Helm v3.14              |
-| CI/CD         | GitHub Actions                                  |
+| Layer         | Technology                                        |
+|---------------|---------------------------------------------------|
+| IaC           | Terraform >= 1.5, AWS provider ~> 5.0             |
+| Cloud         | AWS: EC2 (Free Tier), ECR, VPC, S3 (state)       |
+| App           | Python 3.11, FastAPI 0.111.0, Uvicorn             |
+| Container     | Docker (multi-stage builds)                       |
+| Deploy        | AWS SSM Session Manager (no SSH, no kubectl)      |
+| CI/CD         | GitHub Actions                                    |
 
 ## Project Structure
 
 ```
 SmartCampus/
 ├── terraform/           # All AWS infrastructure
-│   ├── provider.tf      # AWS provider config + S3/DynamoDB remote state backend
-│   ├── variables.tf     # All parameterizable inputs (region, env, node counts, CIDRs)
-│   └── main.tf          # Module composition: VPC → EKS → ECR + outputs
+│   ├── provider.tf      # AWS provider config + S3 remote state backend (use_lockfile)
+│   ├── variables.tf     # All parameterizable inputs (region, env, instance type, CIDRs)
+│   └── main.tf          # Module composition: VPC → EC2 → ECR + outputs
 ├── app/
 │   ├── main.py          # All API endpoints: /, /health, /servicios, /info
 │   └── Dockerfile       # Multi-stage build (builder + runtime stages)
-├── helm/smartcampus/
-│   ├── values.yaml      # All tunable defaults: replicas, resources, probes, HPA
-│   └── templates/       # Deployment, Service, HPA, ConfigMap manifests
+├── helm/smartcampus/    # Kept for reference — NOT used in active deployment
 └── .github/workflows/
     ├── ci.yml           # Triggers on app/** changes: test → build → Trivy scan → ECR push
-    └── cd.yml           # Triggers on main: helm lint → deploy to EKS (requires approval)
+    └── cd.yml           # Triggers on main: SSM → EC2 docker pull + run (requires approval)
 ```
 
 ## Essential Commands
@@ -41,7 +39,7 @@ SmartCampus/
 terraform init                              # Download modules, configure S3 backend
 terraform plan  -var="environment=dev"      # Preview changes
 terraform apply -var="environment=dev"      # Provision/update infrastructure
-terraform output                            # Print cluster endpoint, ECR URL, kubectl cmd
+terraform output                            # Print EC2 public IP, app URL, SSM connect cmd
 terraform destroy -var="environment=dev"    # Tear down all resources
 ```
 
@@ -55,44 +53,39 @@ docker run -p 8000:8000 smartcampus-app:local
 # Swagger UI auto-generated at http://localhost:8000/docs
 ```
 
-### Kubernetes / Helm
+### EC2 / SSM
 
 ```bash
-# Configure kubectl (also printed by `terraform output configure_kubectl`)
-aws eks --region us-east-1 update-kubeconfig --name smartcampus-cluster
+# Get the public IP and app URL
+terraform output app_url                    # → http://<PUBLIC_IP>:8000
 
-# Deploy or upgrade
-helm upgrade --install smartcampus ./helm/smartcampus \
-  --namespace smartcampus \
-  --set image.repository=<ECR_URL>/smartcampus-services \
-  --set image.tag=<7-char-commit-sha> \
-  --atomic --timeout 5m
+# Connect to the instance interactively via SSM (no SSH or port 22 needed)
+terraform output ssm_connect               # prints the command below
+aws ssm start-session --target <INSTANCE_ID> --region us-east-1
 
-# Inspect
-kubectl get pods,svc,hpa -n smartcampus
-helm history smartcampus -n smartcampus
-
-# Validate chart locally
-helm lint ./helm/smartcampus
-helm template smartcampus ./helm/smartcampus --set image.tag=preview
+# Check running container on the instance
+aws ssm send-command \
+  --instance-ids <INSTANCE_ID> \
+  --document-name "AWS-RunShellScript" \
+  --parameters commands='["docker ps"]' \
+  --query 'Command.CommandId' --output text
 ```
 
 ## Required Secrets (GitHub Actions)
 
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` — used in `.github/workflows/ci.yml:87-89`
-and `.github/workflows/cd.yml:70-72`. The CD pipeline also requires a `production` environment
+and `.github/workflows/cd.yml:43-45`. The CD pipeline also requires a `production` environment
 configured in GitHub with manual approval rules.
 
 ## Key File References
 
-- Remote state backend config: `terraform/provider.tf:23-29`
+- Remote state backend config: `terraform/provider.tf:23-30`
 - Global AWS resource tags: `terraform/provider.tf:37-44`
-- Node group auto-scaling bounds: `terraform/main.tf:56-58`
-- ECR lifecycle policy (keeps 10 images): `terraform/main.tf:94-109`
-- Health check endpoint (used by K8s probes): `app/main.py:34-49`
+- EC2 instance definition + user_data bootstrap: `terraform/main.tf:124-170`
+- ECR lifecycle policy (keeps 10 images): `terraform/main.tf:192-207`
+- Health check endpoint (used by Docker HEALTHCHECK): `app/main.py:34-49`
 - Non-root container user setup: `app/Dockerfile:48-49`
-- Zero-downtime rolling update config: `helm/smartcampus/values.yaml:63-67`
-- Topology spread constraints: `helm/smartcampus/templates/deployment.yaml:50-56`
+- CD deploy via SSM send-command: `.github/workflows/cd.yml:89-116`
 
 ## Additional Documentation
 

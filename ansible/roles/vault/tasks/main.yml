@@ -1,0 +1,12 @@
+---
+- name: Instalar Vault
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configurar Vault
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Inicializar y unseal Vault
+  ansible.builtin.import_tasks: init_unseal.yml
+
+- name: Configurar motor KV, políticas y secretos
+  ansible.builtin.import_tasks: kv_secrets.yml

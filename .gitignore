@@ -1,0 +1,34 @@
+# ── HashiCorp Vault ──────────────────────────────────────────
+# Contiene unseal keys y root token — NUNCA commitear
+.vault-init.json
+
+# ── Terraform ────────────────────────────────────────────────
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+dist/
+build/
+
+# ── Ansible ──────────────────────────────────────────────────
+*.retry
+
+# ── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.100.0/windows_386/terraform-provider-aws_v5.100.0_x5.exe
+terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.100.0/windows_386/terraform-provider-aws_v5.100.0_x5.exe

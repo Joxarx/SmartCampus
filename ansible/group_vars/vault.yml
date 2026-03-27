@@ -1,0 +1,5 @@
+---
+# Variables de grupo para vault_servers
+# Sobrescriben los defaults del rol para todos los hosts en [vault_servers]
+
+ansible_python_interpreter: /usr/bin/python3

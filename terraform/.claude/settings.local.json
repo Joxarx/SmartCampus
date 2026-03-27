@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"C:\\\\Users\\\\josha\\\\OneDrive\\\\Documentos\\\\DevOps\\\\smartcampus\\\\SmartCampus\" remote -v)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+---
+# ── Configuración de Vault ────────────────────────────────────
+- name: Desplegar vault.hcl desde template
+  ansible.builtin.template:
+    src: vault.hcl.j2
+    dest: "{{ vault_config_dir }}/vault.hcl"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: "0640"
+  notify:
+    - restart vault
+
+# ── Servicio systemd ─────────────────────────────────────────
+- name: Desplegar unit de systemd para Vault
+  ansible.builtin.template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart vault
+
+# Forzar los handlers pendientes antes de continuar
+- name: Ejecutar handlers pendientes (reload + restart)
+  ansible.builtin.meta: flush_handlers
+
+# ── Servicio activo ──────────────────────────────────────────
+- name: Habilitar y arrancar el servicio vault
+  ansible.builtin.systemd:
+    name: vault
+    state: started
+    enabled: true
+    daemon_reload: true

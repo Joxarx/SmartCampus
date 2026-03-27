@@ -1,0 +1,23 @@
+---
+# ── Versión de Vault ─────────────────────────────────────────
+vault_version: "1.17.2"
+
+# ── Networking ───────────────────────────────────────────────
+vault_port: 8200
+
+# ── Paths en el servidor ─────────────────────────────────────
+vault_data_dir: /opt/vault/data
+vault_config_dir: /etc/vault.d
+vault_install_dir: /usr/local/bin
+
+# ── Usuario y grupo del sistema ──────────────────────────────
+vault_user: vault
+vault_group: vault
+
+# ── Política y token CI/CD ───────────────────────────────────
+vault_policy_name: cicd-policy
+vault_token_ttl: "87600h"          # 10 años — renovable
+vault_token_display_name: "github-actions-cicd"
+
+# ── Motor KV ─────────────────────────────────────────────────
+vault_kv_mount: secret

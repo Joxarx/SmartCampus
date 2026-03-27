@@ -4,7 +4,8 @@
 # ============================================================
 
 # Número de réplicas del pod (instancias de la app)
-replicaCount: 2
+# Free Tier: 1 réplica en t2.micro (sin clúster K8s)
+replicaCount: 1
 
 # Configuración de la imagen Docker
 image:
@@ -18,9 +19,9 @@ fullnameOverride: "smartcampus-services"
 
 # Configuración del Service: cómo se expone la app en K8s
 service:
-  type: LoadBalancer   # Crea un Load Balancer en AWS automáticamente
-  port: 80             # Puerto externo (HTTP estándar)
-  targetPort: 8000     # Puerto interno del contenedor (FastAPI)
+  type: NodePort   # NodePort evita crear un ALB (~$6/mes en Free Tier)
+  port: 80         # Puerto externo (HTTP estándar)
+  targetPort: 8000 # Puerto interno del contenedor (FastAPI)
 
 # Variables de entorno inyectadas en el contenedor
 env:
@@ -37,11 +38,11 @@ resources:
     cpu: 250m      # 0.25 CPU core máximo permitido
     memory: 256Mi  # 256 MB RAM máximo permitido
 
-# Auto-scaling horizontal: ajusta réplicas según uso de CPU
+# Auto-scaling horizontal: desactivado en Free Tier (1 sola instancia)
 autoscaling:
-  enabled: true
-  minReplicas: 2    # Siempre al menos 2 pods (alta disponibilidad)
-  maxReplicas: 5    # Máximo 5 pods en pico de tráfico
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
   targetCPUUtilizationPercentage: 70  # Escala si CPU > 70%
 
 # Sondas de salud: K8s usa estos endpoints para gestionar pods

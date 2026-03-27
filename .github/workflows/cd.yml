@@ -2,9 +2,10 @@
 # cd.yml - Pipeline de Entrega Continua (CD)
 # SmartCampus Services - GitHub Actions
 # Disparador: merge/push a la rama main (producción)
+# Despliegue: AWS SSM → EC2 t2.micro → Docker (Free Tier)
 # ============================================================
 
-name: 🚀 CD - Deploy a Kubernetes con Helm
+name: 🚀 CD - Deploy a EC2 con Docker
 
 on:
   push:
@@ -21,116 +22,141 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: smartcampus-services
-  EKS_CLUSTER_NAME: smartcampus-cluster
-  HELM_RELEASE_NAME: smartcampus
-  HELM_CHART_PATH: ./helm/smartcampus
-  NAMESPACE: smartcampus
 
 jobs:
-  # ── JOB 1: Validar Helm Chart ────────────────────────────
-  validate-helm:
-    name: 📋 Validar Helm Chart
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-
-    steps:
-      - name: 📥 Checkout del código
-        uses: actions/checkout@v4
-
-      - name: 🎡 Instalar Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: "v3.14.0"
-
-      - name: ✅ Lint del Helm Chart (validación de sintaxis)
-        run: |
-          helm lint ${{ env.HELM_CHART_PATH }}
-          echo "✅ Helm Chart válido"
-
-      - name: 🔍 Template render (previsualizar manifiestos K8s)
-        run: |
-          helm template ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART_PATH }} \
-            --set image.tag=preview \
-            --debug
-
-  # ── JOB 2: Despliegue en Kubernetes ─────────────────────
+  # ── JOB ÚNICO: Despliegue en EC2 via SSM ─────────────────
+  # SSM Session Manager permite enviar comandos a la instancia EC2
+  # sin abrir el puerto 22 (SSH). Más seguro y sin gestión de claves.
   deploy:
-    name: 🚀 Deploy a EKS con Helm
+    name: 🚀 Deploy a EC2 con Docker
     runs-on: ubuntu-latest
-    needs: validate-helm  # Solo despliega si Helm es válido
     environment: production  # Requiere aprobación manual en GitHub
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 📥 Checkout del código
         uses: actions/checkout@v4
+
+      - name: 🔓 Leer secretos desde Vault
+        uses: hashicorp/vault-action@v3
+        id: vault-secrets
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            secret/data/smartcampus/aws AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/smartcampus/aws AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY
 
       - name: 🔐 Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ steps.vault-secrets.outputs.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ steps.vault-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: 🔑 Login a Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Configura kubectl para conectarse al clúster EKS de AWS
-      - name: ☸️ Configurar kubectl para EKS
-        run: |
-          aws eks --region ${{ env.AWS_REGION }} \
-            update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
-          kubectl cluster-info
-
-      - name: 🎡 Instalar Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: "v3.14.0"
-
-      # Crea el namespace de Kubernetes si no existe
-      - name: 📁 Crear namespace de Kubernetes
-        run: |
-          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
-
-      # Obtiene el tag de la última imagen en ECR (el commit SHA)
-      - name: 🏷️ Obtener tag de imagen actual
+      # Obtiene el tag de la imagen (SHA del commit, 7 caracteres)
+      - name: 🏷️ Obtener tag de imagen
         id: image-tag
         run: |
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           echo "tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
           ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
           echo "registry=${ECR_REGISTRY}" >> $GITHUB_OUTPUT
+          IMAGE_URI="${ECR_REGISTRY}/${{ env.ECR_REPOSITORY }}:${SHORT_SHA}"
+          echo "image-uri=${IMAGE_URI}" >> $GITHUB_OUTPUT
 
-      # Despliega o actualiza la aplicación usando Helm
-      # helm upgrade --install: instala si no existe, actualiza si existe
-      - name: 📦 Deploy con Helm (upgrade/install)
+      # Busca el ID de la instancia EC2 por tag de proyecto
+      - name: 🔍 Obtener ID de instancia EC2
+        id: ec2
         run: |
-          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART_PATH }} \
-            --namespace ${{ env.NAMESPACE }} \
-            --set image.repository="${{ steps.image-tag.outputs.registry }}/${{ env.ECR_REPOSITORY }}" \
-            --set image.tag="${{ steps.image-tag.outputs.tag }}" \
-            --set env.ENVIRONMENT="${{ vars.ENVIRONMENT || 'production' }}" \
-            --atomic \
-            --timeout 5m \
-            --wait
-          echo "✅ Despliegue completado"
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters \
+              "Name=tag:Project,Values=SmartCampus" \
+              "Name=instance-state-name,Values=running" \
+            --query 'Reservations[0].Instances[0].InstanceId' \
+            --output text)
 
-      # Verifica que los pods quedaron en estado Running
-      - name: 🔍 Verificar estado del despliegue
+          if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" == "None" ]; then
+            echo "❌ No se encontró instancia EC2 con tag Project=SmartCampus en estado running"
+            exit 1
+          fi
+
+          echo "instance-id=${INSTANCE_ID}" >> $GITHUB_OUTPUT
+          echo "✅ Instancia EC2 encontrada: ${INSTANCE_ID}"
+
+      # Envía comandos a la instancia via SSM (sin SSH ni puerto 22)
+      # Detiene el contenedor anterior y arranca uno nuevo con la imagen actualizada
+      - name: 📦 Deploy: actualizar contenedor Docker en EC2
         run: |
-          echo "--- Pods en el namespace ${{ env.NAMESPACE }} ---"
-          kubectl get pods -n ${{ env.NAMESPACE }}
-          echo "--- Servicios expuestos ---"
-          kubectl get svc -n ${{ env.NAMESPACE }}
-          echo "--- Historial de Helm releases ---"
-          helm history ${{ env.HELM_RELEASE_NAME }} -n ${{ env.NAMESPACE }}
+          IMAGE_URI="${{ steps.image-tag.outputs.image-uri }}"
+          ECR_REGISTRY="${{ steps.image-tag.outputs.registry }}"
+          INSTANCE_ID="${{ steps.ec2.outputs.instance-id }}"
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands="[
+              \"aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${ECR_REGISTRY}\",
+              \"docker pull ${IMAGE_URI}\",
+              \"docker stop smartcampus || true\",
+              \"docker rm smartcampus || true\",
+              \"docker run -d --name smartcampus --restart unless-stopped -p 8000:8000 -e ENVIRONMENT=production -e APP_VERSION=${{ steps.image-tag.outputs.tag }} ${IMAGE_URI}\",
+              \"docker ps --filter name=smartcampus --format 'Contenedor activo: {{.Names}} | Estado: {{.Status}} | Imagen: {{.Image}}'\"
+            ]" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "✅ Comando SSM enviado: ${COMMAND_ID}"
+          echo "command-id=${COMMAND_ID}" >> $GITHUB_ENV
+
+          # Esperar a que el comando termine (máx 2 minutos)
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" || true
+
+          # Mostrar el resultado del comando
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" \
+            --query '[Status, StandardOutputContent, StandardErrorContent]' \
+            --output text
+
+      # Verifica que la aplicación responde correctamente
+      - name: 🔍 Verificar que la app responde
+        run: |
+          INSTANCE_ID="${{ steps.ec2.outputs.instance-id }}"
+
+          # Obtener IP pública de la instancia
+          PUBLIC_IP=$(aws ec2 describe-instances \
+            --instance-ids "$INSTANCE_ID" \
+            --query 'Reservations[0].Instances[0].PublicIpAddress' \
+            --output text)
+
+          echo "🌐 App URL: http://${PUBLIC_IP}:8000"
+
+          # Esperar hasta 60 segundos para que el contenedor esté listo
+          for i in {1..12}; do
+            if curl -sf "http://${PUBLIC_IP}:8000/health" > /dev/null 2>&1; then
+              echo "✅ La aplicación responde correctamente"
+              curl -s "http://${PUBLIC_IP}:8000/health"
+              echo "public-ip=${PUBLIC_IP}" >> $GITHUB_ENV
+              break
+            fi
+            echo "⏳ Intento ${i}/12 - esperando que la app esté lista..."
+            sleep 5
+          done
 
       - name: 📝 Resumen del despliegue
         run: |
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Release** | \`${{ env.HELM_RELEASE_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Namespace** | \`${{ env.NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Instancia EC2** | \`${{ steps.ec2.outputs.instance-id }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image URI** | \`${{ steps.image-tag.outputs.image-uri }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Image Tag** | \`${{ steps.image-tag.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Clúster** | \`${{ env.EKS_CLUSTER_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **App URL** | http://${public_ip}:8000 |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY

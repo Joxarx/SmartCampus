@@ -1,0 +1,24 @@
+---
+# ============================================================
+# site.yml - Playbook principal para provisionar HashiCorp Vault
+#
+# Uso:
+#   1. Completa ansible/inventory/hosts.ini con la IP de Vault
+#   2. ansible-playbook ansible/site.yml -i ansible/inventory/hosts.ini
+#
+# El playbook ejecuta el rol 'vault' que:
+#   - Instala el binario de Vault
+#   - Configura y levanta el servicio systemd
+#   - Inicializa Vault (guarda .vault-init.json localmente)
+#   - Unseal y habilita el motor KV v2
+#   - Crea la política cicd-policy y el token para GitHub Actions
+#   - Escribe secretos placeholder en secret/smartcampus/aws
+# ============================================================
+
+- name: Provisionar HashiCorp Vault
+  hosts: vault_servers
+  become: true
+  gather_facts: true
+
+  roles:
+    - vault

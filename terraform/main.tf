@@ -1,11 +1,11 @@
 # ============================================================
 # main.tf - Recursos principales de infraestructura
-# Provisiona: VPC, EKS (Kubernetes) y ECR (Container Registry)
+# Provisiona: VPC (pública), IAM, ECR y EC2 Free Tier (t2.micro o t3.micro)
 # ============================================================
 
 # ── MÓDULO: VPC ─────────────────────────────────────────────
-# Crea la red virtual privada donde residirá toda la infra.
-# Usamos el módulo oficial de la comunidad Terraform para VPC.
+# Red virtual privada simplificada: una sola subred pública,
+# sin NAT Gateway (ahorra ~$32/mes y no es necesario para EC2 público).
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
@@ -13,67 +13,165 @@ module "vpc" {
   name = "${var.cluster_name}-vpc"
   cidr = var.vpc_cidr
 
-  # Distribuimos en 2 zonas de disponibilidad para alta disponibilidad
-  azs             = ["${var.aws_region}a", "${var.aws_region}b"]
-  private_subnets = var.private_subnets
-  public_subnets  = var.public_subnets
+  # Una sola zona de disponibilidad es suficiente para Free Tier
+  azs            = ["${var.aws_region}a"]
+  public_subnets = var.public_subnets
 
-  # NAT Gateway: permite que los nodos privados salgan a internet
-  enable_nat_gateway   = true
-  single_nat_gateway   = var.environment != "prod"  # 1 NAT en dev/staging, uno por AZ en prod
-  enable_dns_hostnames = true  # Necesario para EKS
+  # Sin NAT Gateway: los nodos son públicos y no lo necesitan
+  enable_nat_gateway   = false
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+}
 
-  # Tags especiales requeridos por EKS para descubrir las subredes
-  public_subnet_tags = {
-    "kubernetes.io/role/elb" = "1"
+# ── SECURITY GROUP: Acceso HTTP a la aplicación ───────────────
+# Permite tráfico entrante en el puerto 8000 (FastAPI)
+# y salida a internet (para descargar imágenes de ECR).
+resource "aws_security_group" "app" {
+  name        = "${var.cluster_name}-app-sg"
+  description = "Permite acceso HTTP a la app SmartCampus"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "FastAPI HTTP"
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = "1"
+
+  egress {
+    description = "Salida a internet (ECR, actualizaciones)"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-# ── MÓDULO: EKS (Kubernetes) ─────────────────────────────────
-# Provisiona un clúster Kubernetes gestionado en AWS (EKS).
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+# ── IAM: Rol para que EC2 pueda leer de ECR y usar SSM ────────
+# Sin este rol, la instancia no podría hacer docker pull desde ECR.
+resource "aws_iam_role" "ec2_ecr_role" {
+  name = "${var.cluster_name}-ec2-role"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.kubernetes_version
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+    }]
+  })
+}
 
-  # El plano de control de EKS se conecta a nuestra VPC
-  vpc_id                   = module.vpc.vpc_id
-  subnet_ids               = module.vpc.private_subnets
-  cluster_endpoint_public_access = true  # Permite kubectl desde internet
+# Permiso para leer imágenes de ECR (docker pull)
+resource "aws_iam_role_policy_attachment" "ecr_read" {
+  role       = aws_iam_role.ec2_ecr_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
 
-  # Grupo de nodos workers: las VMs que ejecutarán los pods
-  eks_managed_node_groups = {
-    smartcampus_nodes = {
-      name           = "smartcampus-workers"
-      instance_types = [var.node_instance_type]
+# Permiso para SSM Session Manager (acceso remoto sin abrir puerto 22)
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.ec2_ecr_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
 
-      # Auto-scaling: se ajusta según la carga de trabajo
-      min_size     = var.node_min_count
-      max_size     = var.node_max_count
-      desired_size = var.node_desired_count
+# El instance profile es el "puente" entre el rol IAM y la instancia EC2
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${var.cluster_name}-ec2-profile"
+  role = aws_iam_role.ec2_ecr_role.name
+}
 
-      # Disco de 20 GB por nodo (suficiente para las imágenes Docker)
-      disk_size = 20
+# ── INSTANCIA FREE TIER: auto-detección del tipo correcto ────
+# Distintas cuentas/regiones ofrecen t2.micro o t3.micro como Free Tier.
+# Este data source consulta la API de AWS para encontrar cuál aplica aquí.
+data "aws_ec2_instance_types" "free_tier" {
+  filter {
+    name   = "free-tier-eligible"
+    values = ["true"]
+  }
+  # Filtramos solo las variantes micro de la familia t2/t3
+  filter {
+    name   = "instance-type"
+    values = ["t2.micro", "t3.micro"]
+  }
+}
 
-      labels = {
-        Environment = var.environment
-        NodeGroup   = "application"
-      }
-    }
+locals {
+  # Si el usuario especificó un tipo, usarlo; si no, tomar el primero
+  # que AWS confirme como Free Tier en esta cuenta/región.
+  instance_type = var.instance_type != "" ? var.instance_type : tolist(data.aws_ec2_instance_types.free_tier.instance_types)[0]
+}
+
+# ── AMI: Amazon Linux 2023 (imagen base del sistema operativo) ─
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
   }
 
-  # Permisos para que EKS gestione recursos de AWS por nosotros
-  enable_cluster_creator_admin_permissions = true
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# ── EC2: Instancia Free Tier (t2.micro o t3.micro según cuenta) ─
+# Ejecuta directamente el contenedor Docker con la aplicación FastAPI.
+# Reemplaza el clúster EKS completo (~$170/mes → $0 en Free Tier).
+resource "aws_instance" "app" {
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = local.instance_type
+  subnet_id              = module.vpc.public_subnets[0]
+  vpc_security_group_ids = [aws_security_group.app.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+
+  # IP pública fija: necesaria para acceder a la app desde internet
+  associate_public_ip_address = true
+
+  # Clave SSH opcional (dejar vacío = usar solo SSM para acceso)
+  key_name = var.key_name != "" ? var.key_name : null
+
+  # user_data: script que se ejecuta UNA VEZ al lanzar la instancia
+  # Instala Docker, se autentica en ECR y arranca el contenedor
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+
+    # Actualizar sistema e instalar Docker y AWS CLI
+    dnf update -y
+    dnf install -y docker aws-cli
+    systemctl start docker
+    systemctl enable docker
+    usermod -aG docker ec2-user
+
+    # Autenticarse en ECR y descargar la imagen más reciente
+    # (|| true evita fallos si aún no se ha subido ninguna imagen)
+    aws ecr get-login-password --region ${var.aws_region} | \
+      docker login --username AWS --password-stdin ${aws_ecr_repository.smartcampus.repository_url} || true
+
+    docker pull ${aws_ecr_repository.smartcampus.repository_url}:latest || true
+
+    # Iniciar el contenedor con reinicio automático ante fallos
+    docker run -d \
+      --name smartcampus \
+      --restart unless-stopped \
+      -p 8000:8000 \
+      -e ENVIRONMENT=production \
+      -e APP_VERSION=latest \
+      ${aws_ecr_repository.smartcampus.repository_url}:latest || true
+  EOF
+
+  tags = {
+    Name = "${var.cluster_name}-app"
+  }
 }
 
 # ── RECURSO: ECR (Container Registry) ───────────────────────
 # Registro privado de imágenes Docker en AWS.
-# Aquí se almacenarán las imágenes construidas en el pipeline CI.
+# El pipeline CI construye y sube la imagen aquí.
 resource "aws_ecr_repository" "smartcampus" {
   name                 = var.ecr_repo_name
   image_tag_mutability = "MUTABLE" # Permite sobreescribir el tag :latest
@@ -90,7 +188,7 @@ resource "aws_ecr_repository" "smartcampus" {
 }
 
 # Política de ciclo de vida: elimina imágenes antiguas automáticamente.
-# Evita costos excesivos de almacenamiento en ECR.
+# Mantiene solo las últimas 10 para no superar el límite Free Tier (500 MB).
 resource "aws_ecr_lifecycle_policy" "smartcampus" {
   repository = aws_ecr_repository.smartcampus.name
 
@@ -109,17 +207,14 @@ resource "aws_ecr_lifecycle_policy" "smartcampus" {
 }
 
 # ── OUTPUTS: Valores exportados ──────────────────────────────
-# Estos valores se usan en el pipeline de CI/CD para configurar
-# kubectl y hacer push de imágenes a ECR.
-
-output "cluster_endpoint" {
-  description = "Endpoint del API Server de Kubernetes"
-  value       = module.eks.cluster_endpoint
+output "app_public_ip" {
+  description = "IP pública de la instancia EC2"
+  value       = aws_instance.app.public_ip
 }
 
-output "cluster_name" {
-  description = "Nombre del clúster EKS"
-  value       = module.eks.cluster_name
+output "app_url" {
+  description = "URL de la aplicación SmartCampus"
+  value       = "http://${aws_instance.app.public_ip}:8000"
 }
 
 output "ecr_repository_url" {
@@ -127,7 +222,7 @@ output "ecr_repository_url" {
   value       = aws_ecr_repository.smartcampus.repository_url
 }
 
-output "configure_kubectl" {
-  description = "Comando para configurar kubectl localmente"
-  value       = "aws eks --region ${var.aws_region} update-kubeconfig --name ${var.cluster_name}"
+output "ssm_connect" {
+  description = "Comando para conectarse a la instancia via AWS SSM (sin SSH)"
+  value       = "aws ssm start-session --target ${aws_instance.app.id} --region ${var.aws_region}"
 }

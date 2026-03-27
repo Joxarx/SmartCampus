@@ -10,7 +10,7 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-# Entorno de despliegue (afecta tamaños, réplicas, etc.)
+# Entorno de despliegue (afecta configuración de la app)
 variable "environment" {
   description = "Entorno de despliegue: dev, staging o prod"
   type        = string
@@ -22,44 +22,28 @@ variable "environment" {
   }
 }
 
-# Nombre del clúster EKS (Elastic Kubernetes Service)
+# Nombre base del proyecto (usado en nombres de recursos de AWS)
 variable "cluster_name" {
-  description = "Nombre del clúster de Kubernetes (EKS)"
+  description = "Nombre base del proyecto (prefijo de recursos AWS)"
   type        = string
-  default     = "smartcampus-cluster"
+  default     = "smartcampus"
 }
 
-# Versión de Kubernetes a usar en EKS
-variable "kubernetes_version" {
-  description = "Versión de Kubernetes para el clúster EKS"
+# Tipo de instancia EC2.
+# Dejar vacío ("") para auto-detectar cuál es Free Tier en esta cuenta/región
+# (puede ser t2.micro o t3.micro según la cuenta y la región).
+variable "instance_type" {
+  description = "Tipo de instancia EC2 (vacío = auto-detectar Free Tier eligible)"
   type        = string
-  default     = "1.29"
+  default     = "" # Auto-detect: t2.micro o t3.micro según la cuenta/región
 }
 
-# Tipo de instancia EC2 para los nodos workers del clúster
-variable "node_instance_type" {
-  description = "Tipo de instancia EC2 para los nodos de trabajo"
+# Nombre del par de claves SSH (opcional).
+# Dejar vacío ("") para usar solo SSM Session Manager (más seguro, sin abrir puerto 22).
+variable "key_name" {
+  description = "Nombre del par de claves SSH en AWS (vacío = solo SSM)"
   type        = string
-  default     = "t3.medium" # 2 vCPU, 4 GB RAM - adecuado para dev
-}
-
-# Número de nodos en el grupo de workers
-variable "node_desired_count" {
-  description = "Número deseado de nodos workers en el clúster"
-  type        = number
-  default     = 2
-}
-
-variable "node_min_count" {
-  description = "Número mínimo de nodos (auto-scaling)"
-  type        = number
-  default     = 2
-}
-
-variable "node_max_count" {
-  description = "Número máximo de nodos (auto-scaling)"
-  type        = number
-  default     = 4
+  default     = ""
 }
 
 # Bloques CIDR para la VPC (red privada virtual)
@@ -69,18 +53,12 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-# Subredes privadas donde vivirán los nodos de Kubernetes
-variable "private_subnets" {
-  description = "CIDRs para subredes privadas (nodos EKS)"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
-}
-
-# Subredes públicas para los Load Balancers expuestos a internet
+# Subred pública donde vivirá la instancia EC2.
+# Una sola AZ es suficiente para Free Tier (sin NAT Gateway).
 variable "public_subnets" {
-  description = "CIDRs para subredes públicas (Load Balancers)"
+  description = "CIDRs para subredes públicas (instancia EC2)"
   type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24"]
+  default     = ["10.0.101.0/24"]
 }
 
 # Nombre del repositorio en ECR (Elastic Container Registry)
@@ -88,4 +66,21 @@ variable "ecr_repo_name" {
   description = "Nombre del repositorio en Amazon ECR"
   type        = string
   default     = "smartcampus-services"
+}
+
+# ── VAULT: Variables para la instancia HashiCorp Vault ───────
+
+# Nombre del par de claves SSH para la instancia Vault.
+# Requerido: Ansible necesita SSH para provisionar Vault.
+variable "vault_key_name" {
+  description = "Nombre del par de claves SSH en AWS para la instancia Vault (requerido para Ansible)"
+  type        = string
+}
+
+# CIDR que puede conectarse por SSH al servidor Vault.
+# Restringe a tu IP: e.g. terraform apply -var="vault_admin_cidr=203.0.113.0/32"
+variable "vault_admin_cidr" {
+  description = "CIDR permitido para SSH (puerto 22) en la instancia Vault. Restringe a tu IP para mayor seguridad."
+  type        = string
+  default     = "0.0.0.0/0"
 }

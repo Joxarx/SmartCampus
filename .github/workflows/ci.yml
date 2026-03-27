@@ -81,11 +81,21 @@ jobs:
           echo "tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
           echo "Image tag: ${SHORT_SHA}"
 
+      - name: 🔓 Leer secretos desde Vault
+        uses: hashicorp/vault-action@v3
+        id: vault-secrets
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            secret/data/smartcampus/aws AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/smartcampus/aws AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY
+
       - name: 🔐 Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ steps.vault-secrets.outputs.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ steps.vault-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       # Autentica Docker contra ECR para poder hacer push

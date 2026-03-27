@@ -1,0 +1,55 @@
+---
+# ── Paquetes necesarios ───────────────────────────────────────
+- name: Instalar dependencias del sistema
+  ansible.builtin.dnf:
+    name:
+      - unzip
+      - curl
+      - libcap   # provee setcap para CAP_IPC_LOCK
+    state: present
+
+# ── Usuario y grupo de sistema ───────────────────────────────
+- name: Crear grupo vault
+  ansible.builtin.group:
+    name: "{{ vault_group }}"
+    system: true
+    state: present
+
+- name: Crear usuario vault
+  ansible.builtin.user:
+    name: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    system: true
+    shell: /sbin/nologin
+    home: /opt/vault
+    create_home: false
+    state: present
+
+# ── Directorios ──────────────────────────────────────────────
+- name: Crear directorios de Vault
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: "0750"
+  loop:
+    - /opt/vault
+    - "{{ vault_data_dir }}"
+    - "{{ vault_config_dir }}"
+
+# ── Binario ──────────────────────────────────────────────────
+- name: Descargar e instalar binario de Vault {{ vault_version }}
+  ansible.builtin.unarchive:
+    src: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: "{{ vault_install_dir }}"
+    remote_src: true
+    creates: "{{ vault_install_dir }}/vault"
+    mode: "0755"
+
+# ── Capability CAP_IPC_LOCK ──────────────────────────────────
+# Evita que la memoria de Vault sea volcada a disco (swap)
+- name: Asignar CAP_IPC_LOCK al binario de Vault
+  ansible.builtin.command:
+    cmd: "setcap cap_ipc_lock=+ep {{ vault_install_dir }}/vault"
+  changed_when: true
