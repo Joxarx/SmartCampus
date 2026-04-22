@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartCampus Services — Dashboard</title>
+  <meta name="description" content="Dashboard del sistema universitario SmartCampus Services" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+
+  <!-- Tailwind via CDN (modo de desarrollo / demo) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#eef4ff',
+              100: '#dbe6ff',
+              200: '#bccfff',
+              300: '#90adff',
+              400: '#6383ff',
+              500: '#3f5dfc',
+              600: '#2c3ff0',
+              700: '#252fd0',
+              800: '#222ba6',
+              900: '#222b83',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+            'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+            slideUp: { '0%': { opacity: 0, transform: 'translateY(8px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+            pulseSoft: { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .glass {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .dark .glass {
+      background: rgba(17,24,39,0.7);
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+      background-size: 200% 100%;
+      animation: skeleton 1.5s ease-in-out infinite;
+    }
+    .dark .skeleton {
+      background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+      background-size: 200% 100%;
+    }
+    @keyframes skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-white to-brand-50 dark:from-gray-950 dark:via-gray-900 dark:to-brand-900/30 text-gray-900 dark:text-gray-100 min-h-screen">
+
+  <!-- ─────────── HEADER ─────────── -->
+  <header class="sticky top-0 z-50 glass border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold leading-tight">SmartCampus <span class="text-brand-600 dark:text-brand-400">Services</span></h1>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Dashboard universitario</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Live status -->
+        <div id="status-pill" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <span id="status-dot" class="w-2 h-2 rounded-full bg-gray-400"></span>
+          <span id="status-text">Conectando...</span>
+        </div>
+
+        <!-- Theme toggle -->
+        <button id="theme-toggle" type="button" aria-label="Cambiar tema"
+                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <svg id="icon-sun"  class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+
+        <a href="/docs" target="_blank" rel="noopener"
+           class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          API Docs
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─────────── HERO ─────────── -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6 animate-fade-in">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Bienvenida -->
+      <div class="lg:col-span-2 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white p-8 shadow-xl shadow-brand-500/20 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
+        <div class="absolute right-20 bottom-0 w-32 h-32 rounded-full bg-white/5 blur-xl"></div>
+        <div class="relative z-10">
+          <p class="text-brand-100 text-sm uppercase tracking-wider font-medium">Plataforma universitaria</p>
+          <h2 id="hero-message" class="text-3xl sm:text-4xl font-extrabold mt-2 mb-3">Cargando bienvenida...</h2>
+          <p class="text-brand-100 text-base max-w-xl">
+            Gestión integral del campus: aulas, eventos, horarios y notificaciones — todo en un solo lugar.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="#servicios" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-brand-700 font-semibold rounded-xl hover:bg-brand-50 transition shadow">
+              Explorar servicios
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </a>
+            <a href="/docs" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 px-5 py-2.5 border border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition">
+              Ver API
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-1 gap-4">
+        <div class="rounded-2xl bg-white dark:bg-gray-900 p-5 shadow border border-gray-100 dark:border-gray-800">
+          <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">Versión</p>
+          <p id="stat-version" class="text-2xl font-bold mt-1">—</p>
+        </div>
+        <div class="rounded-2xl bg-white dark:bg-gray-900 p-5 shadow border border-gray-100 dark:border-gray-800">
+          <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">Entorno</p>
+          <p id="stat-env" class="text-2xl font-bold mt-1 capitalize">—</p>
+        </div>
+        <div class="rounded-2xl bg-white dark:bg-gray-900 p-5 shadow border border-gray-100 dark:border-gray-800 col-span-2 lg:col-span-1">
+          <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">Servidor</p>
+          <p id="stat-host" class="text-sm font-mono mt-1 truncate">—</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── SERVICIOS ─────────── -->
+  <section id="servicios" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Servicios disponibles</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Selecciona un servicio para ver su contenido en vivo</p>
+      </div>
+      <button id="btn-refresh-services" type="button"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Refrescar
+      </button>
+    </div>
+    <div id="servicios-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- Skeleton placeholders -->
+      <div class="skeleton rounded-2xl h-44"></div>
+      <div class="skeleton rounded-2xl h-44"></div>
+      <div class="skeleton rounded-2xl h-44"></div>
+      <div class="skeleton rounded-2xl h-44"></div>
+    </div>
+  </section>
+
+  <!-- ─────────── DETALLE DEL SERVICIO ─────────── -->
+  <section id="detalle" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 hidden">
+    <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg overflow-hidden animate-slide-up">
+      <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="detalle-icon" class="w-10 h-10 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center"></div>
+          <div>
+            <h3 id="detalle-title" class="text-lg font-bold">—</h3>
+            <p id="detalle-endpoint" class="text-xs font-mono text-gray-500"></p>
+          </div>
+        </div>
+        <button id="btn-close-detalle" type="button"
+                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="detalle-body" class="p-6"></div>
+    </div>
+  </section>
+
+  <!-- ─────────── INFO DEL SISTEMA ─────────── -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <h2 class="text-2xl font-bold mb-6">Información del sistema</h2>
+    <div id="info-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Llenado dinámicamente -->
+    </div>
+  </section>
+
+  <!-- ─────────── FOOTER ─────────── -->
+  <footer class="border-t border-gray-200 dark:border-gray-800 mt-10 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
+      <p>© <span id="year"></span> SmartCampus Services — Hecho con FastAPI + Tailwind</p>
+      <div class="flex items-center gap-4">
+        <a href="/docs"   target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400">Swagger</a>
+        <a href="/redoc"  target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400">ReDoc</a>
+        <a href="/health" target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400">Health</a>
+        <a href="https://github.com/Joxarx/SmartCampus" target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400 inline-flex items-center gap-1">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─────────── SCRIPT ─────────── -->
+  <script>
+    // ============================================================
+    // Util: fetch JSON con manejo de errores
+    // ============================================================
+    async function getJSON(path) {
+      const res = await fetch(path, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    // ============================================================
+    // Tema (light/dark)
+    // ============================================================
+    const root = document.documentElement;
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      root.classList.add('dark');
+    }
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      root.classList.toggle('dark');
+      localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    // ============================================================
+    // Iconos por servicio
+    // ============================================================
+    const ICONS = {
+      building: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0v-5h-3v5M5 21H3m2 0V9m4 4h6"/></svg>',
+      calendar: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+      clock:    '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+      bell:     '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>',
+    };
+
+    // ============================================================
+    // Carga inicial
+    // ============================================================
+    async function loadRoot() {
+      try {
+        const data = await getJSON('/');
+        document.getElementById('hero-message').textContent = data.message || 'SmartCampus Services';
+      } catch (e) {
+        document.getElementById('hero-message').textContent = 'SmartCampus Services';
+      }
+    }
+
+    async function loadInfo() {
+      try {
+        const data = await getJSON('/info');
+        document.getElementById('stat-version').textContent = data.version;
+        document.getElementById('stat-env').textContent     = data.environment;
+        document.getElementById('stat-host').textContent    = data.hostname;
+
+        const items = [
+          { label: 'Aplicación',       value: data.app,            icon: '🎓' },
+          { label: 'Versión',          value: data.version,        icon: '🏷️' },
+          { label: 'Entorno',          value: data.environment,    icon: '🌎' },
+          { label: 'Python',           value: data.python_version, icon: '🐍' },
+          { label: 'Hostname',         value: data.hostname,       icon: '🖥️' },
+          { label: 'Última actualización', value: new Date(data.timestamp).toLocaleString('es-MX'), icon: '⏱️' },
+        ];
+
+        const grid = document.getElementById('info-grid');
+        grid.innerHTML = items.map(i => `
+          <div class="rounded-xl bg-white dark:bg-gray-900 p-4 border border-gray-100 dark:border-gray-800 flex items-center gap-3">
+            <div class="text-2xl">${i.icon}</div>
+            <div class="min-w-0">
+              <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">${i.label}</p>
+              <p class="font-semibold truncate">${i.value}</p>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error('Error /info:', e);
+      }
+    }
+
+    async function loadServicios() {
+      const grid = document.getElementById('servicios-grid');
+      try {
+        const data = await getJSON('/servicios');
+        grid.innerHTML = data.servicios.map(s => `
+          <button data-endpoint="${s.endpoint}" data-icon="${s.icono}" data-title="${s.nombre}"
+                  class="servicio-card group text-left rounded-2xl bg-white dark:bg-gray-900 p-5 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center shadow-md shadow-brand-500/30">
+                ${ICONS[s.icono] || ICONS.building}
+              </div>
+              <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${s.activo ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-100 text-gray-500'}">
+                ${s.activo ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+            <h3 class="font-bold text-base">${s.nombre}</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-snug">${s.descripcion}</p>
+            <div class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 group-hover:gap-2 transition-all">
+              Ver detalles
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </button>
+        `).join('');
+
+        document.querySelectorAll('.servicio-card').forEach(btn => {
+          btn.addEventListener('click', () => openDetalle(btn.dataset.endpoint, btn.dataset.title, btn.dataset.icon));
+        });
+      } catch (e) {
+        grid.innerHTML = `<div class="col-span-full p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-2xl">Error cargando servicios: ${e.message}</div>`;
+      }
+    }
+
+    // ============================================================
+    // Detalle del servicio
+    // ============================================================
+    async function openDetalle(endpoint, title, iconKey) {
+      const section = document.getElementById('detalle');
+      const body    = document.getElementById('detalle-body');
+      const titleEl = document.getElementById('detalle-title');
+      const epEl    = document.getElementById('detalle-endpoint');
+      const iconEl  = document.getElementById('detalle-icon');
+
+      titleEl.textContent = title;
+      epEl.textContent    = `GET ${endpoint}`;
+      iconEl.innerHTML    = ICONS[iconKey] || ICONS.building;
+      body.innerHTML      = `<div class="flex items-center gap-2 text-gray-500"><div class="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div> Cargando...</div>`;
+      section.classList.remove('hidden');
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      try {
+        const data = await getJSON(endpoint);
+        body.innerHTML = renderByEndpoint(endpoint, data);
+      } catch (e) {
+        body.innerHTML = `<p class="text-red-600">Error: ${e.message}</p>`;
+      }
+    }
+
+    document.getElementById('btn-close-detalle').addEventListener('click', () => {
+      document.getElementById('detalle').classList.add('hidden');
+    });
+
+    // ============================================================
+    // Renderers por endpoint
+    // ============================================================
+    function renderByEndpoint(endpoint, data) {
+      if (endpoint === '/aulas')          return renderAulas(data.aulas);
+      if (endpoint === '/eventos')        return renderEventos(data.eventos);
+      if (endpoint === '/horarios')       return renderHorarios(data.horarios);
+      if (endpoint === '/notificaciones') return renderNotificaciones(data.notificaciones);
+      return `<pre class="text-xs overflow-auto bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    function badgeEstado(estado) {
+      const map = {
+        disponible:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+        ocupada:       'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+        mantenimiento: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+      };
+      return `<span class="text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${map[estado] || 'bg-gray-100 text-gray-600'}">${estado}</span>`;
+    }
+
+    function renderAulas(aulas) {
+      return `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${aulas.map(a => `
+            <div class="rounded-xl border border-gray-100 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-800/40">
+              <div class="flex items-start justify-between mb-2">
+                <div>
+                  <p class="font-bold">${a.id}</p>
+                  <p class="text-xs text-gray-500">${a.edificio}</p>
+                </div>
+                ${badgeEstado(a.estado)}
+              </div>
+              <p class="text-sm font-medium">${a.tipo}</p>
+              <p class="text-xs text-gray-500 mt-1">Capacidad: ${a.capacidad} personas</p>
+              <div class="flex flex-wrap gap-1 mt-3">
+                ${a.equipamiento.map(e => `<span class="text-[10px] uppercase tracking-wider bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-2 py-0.5 rounded">${e}</span>`).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function renderEventos(eventos) {
+      return `
+        <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+          ${eventos.map(e => {
+            const fecha = new Date(e.fecha + 'T' + (e.hora || '00:00'));
+            const day   = fecha.getDate();
+            const mon   = fecha.toLocaleString('es-MX', { month: 'short' }).toUpperCase().replace('.', '');
+            return `
+              <li class="py-4 flex items-start gap-4">
+                <div class="flex-shrink-0 w-14 text-center rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 p-2">
+                  <div class="text-2xl font-extrabold leading-none">${day}</div>
+                  <div class="text-[10px] uppercase tracking-wider mt-0.5">${mon}</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold">${e.titulo}</p>
+                  <p class="text-sm text-gray-500 mt-0.5">${e.lugar} · ${e.hora}</p>
+                  <span class="inline-block mt-2 text-[10px] uppercase tracking-wider bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded font-medium">${e.categoria}</span>
+                </div>
+              </li>
+            `;
+          }).join('')}
+        </ul>`;
+    }
+
+    function renderHorarios(horarios) {
+      return `
+        <div class="overflow-x-auto scrollbar-thin">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs uppercase tracking-wider text-gray-500 border-b border-gray-200 dark:border-gray-700">
+                <th class="pb-3 pr-4">Día</th>
+                <th class="pb-3 pr-4">Hora</th>
+                <th class="pb-3 pr-4">Materia</th>
+                <th class="pb-3 pr-4">Profesor</th>
+                <th class="pb-3">Aula</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              ${horarios.map(h => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <td class="py-3 pr-4 font-medium">${h.dia}</td>
+                  <td class="py-3 pr-4 font-mono text-xs">${h.hora}</td>
+                  <td class="py-3 pr-4">${h.materia}</td>
+                  <td class="py-3 pr-4 text-gray-600 dark:text-gray-400">${h.profesor}</td>
+                  <td class="py-3"><span class="font-mono text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-2 py-0.5 rounded">${h.aula}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderNotificaciones(notifs) {
+      const styles = {
+        info:    { bg: 'bg-sky-50 dark:bg-sky-900/30',         border: 'border-sky-200 dark:border-sky-800',         icon: 'ℹ️' },
+        warning: { bg: 'bg-amber-50 dark:bg-amber-900/30',     border: 'border-amber-200 dark:border-amber-800',     icon: '⚠️' },
+        success: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800', icon: '✅' },
+        danger:  { bg: 'bg-rose-50 dark:bg-rose-900/30',       border: 'border-rose-200 dark:border-rose-800',       icon: '🚨' },
+      };
+      return `
+        <div class="space-y-3">
+          ${notifs.map(n => {
+            const s = styles[n.tipo] || styles.info;
+            return `
+              <div class="flex gap-3 p-4 rounded-xl border ${s.bg} ${s.border}">
+                <div class="text-xl">${s.icon}</div>
+                <div class="flex-1">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <p class="font-semibold">${n.titulo}</p>
+                    <p class="text-xs text-gray-500 flex-shrink-0">${n.fecha}</p>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${n.mensaje}</p>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>`;
+    }
+
+    // ============================================================
+    // Live status (polling /health cada 10s)
+    // ============================================================
+    async function checkHealth() {
+      const dot  = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      try {
+        const data = await getJSON('/health');
+        dot.className  = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft';
+        text.textContent = `En línea · ${data.environment}`;
+      } catch (e) {
+        dot.className  = 'w-2 h-2 rounded-full bg-red-500';
+        text.textContent = 'Sin conexión';
+      }
+    }
+
+    // ============================================================
+    // Bootstrap
+    // ============================================================
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('btn-refresh-services').addEventListener('click', loadServicios);
+
+    loadRoot();
+    loadInfo();
+    loadServicios();
+    checkHealth();
+    setInterval(checkHealth, 10000);
+  </script>
+</body>
+</html>
