@@ -1,966 +1,1709 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SmartCampus Services — Dashboard</title>
+  <title>SmartCampus — Dashboard</title>
   <meta name="description" content="Dashboard del sistema universitario SmartCampus Services" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23e8745b'/><text x='50' y='68' font-size='60' font-family='Georgia,serif' font-style='italic' font-weight='700' text-anchor='middle' fill='white'>S</text></svg>" />
 
-  <!-- Tailwind via CDN (modo de desarrollo / demo) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50:  '#eef4ff',
-              100: '#dbe6ff',
-              200: '#bccfff',
-              300: '#90adff',
-              400: '#6383ff',
-              500: '#3f5dfc',
-              600: '#2c3ff0',
-              700: '#252fd0',
-              800: '#222ba6',
-              900: '#222b83',
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif']
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.4s ease-out',
-            'slide-up': 'slideUp 0.4s ease-out',
-            'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
-          },
-          keyframes: {
-            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
-            slideUp: { '0%': { opacity: 0, transform: 'translateY(8px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
-            pulseSoft: { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
-          }
-        }
-      }
-    }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .glass {
-      background: rgba(255,255,255,0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    /* ─── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --bg: #f6f3ed;
+      --ink: #1a2e2e;
+      --ink-2: #5b6e6e;
+      --ink-3: #8a9797;
+      --card: #ffffff;
+      --card-2: #fbf8f2;
+      --rule: #e3ddd0;
+      --rule-2: #ece7d9;
+
+      --teal: #0d6b5e;
+      --teal-soft: #dff1ee;
+      --coral: #e8745b;
+      --coral-soft: #fde3da;
+      --mustard: #d4a23a;
+      --mustard-soft: #faecca;
+      --lilac: #8b7bb8;
+      --lilac-soft: #ece7f5;
+
+      --shadow-sm: 0 1px 2px rgba(26,46,46,0.04), 0 1px 0 rgba(26,46,46,0.02);
+      --shadow-md: 0 4px 14px rgba(26,46,46,0.06), 0 1px 2px rgba(26,46,46,0.04);
+      --shadow-lg: 0 24px 60px rgba(26,46,46,0.18), 0 4px 12px rgba(26,46,46,0.08);
+
+      --sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --serif: "Instrument Serif", Georgia, serif;
+      --mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+      --radius: 16px;
+      --radius-sm: 12px;
+      --radius-lg: 20px;
     }
-    .dark .glass {
-      background: rgba(17,24,39,0.7);
+    html.dark {
+      --bg: #121917;
+      --ink: #ecebe4;
+      --ink-2: #a6afac;
+      --ink-3: #6d7875;
+      --card: #1c2421;
+      --card-2: #232a27;
+      --rule: #2a322e;
+      --rule-2: #323a36;
+
+      --teal: #5ec3b3;
+      --teal-soft: rgba(94,195,179,.14);
+      --coral: #f28a73;
+      --coral-soft: rgba(242,138,115,.16);
+      --mustard: #e8bb5c;
+      --mustard-soft: rgba(232,187,92,.14);
+      --lilac: #b3a4dc;
+      --lilac-soft: rgba(179,164,220,.14);
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+      --shadow-md: 0 4px 14px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+      --shadow-lg: 0 24px 60px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.4);
     }
-    .skeleton {
-      background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+
+    /* ─── Base ───────────────────────────────────────────────── */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; border: none; background: none; cursor: pointer; }
+    .serif { font-family: var(--serif); font-weight: 400; letter-spacing: -.01em; }
+    .serif-italic { font-family: var(--serif); font-style: italic; font-weight: 400; }
+    .mono { font-family: var(--mono); }
+
+    /* ─── Layout ─────────────────────────────────────────────── */
+    .shell {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 780px) {
+      .shell { grid-template-columns: 1fr; }
+    }
+
+    /* ─── Rail ───────────────────────────────────────────────── */
+    .rail {
+      background: var(--ink);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 4px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    html.dark .rail { background: #0a1210; }
+    .rail-logo {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--coral); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-style: italic; font-size: 28px; font-weight: 400;
+      margin-bottom: 20px;
+    }
+    .rail-item {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      color: rgba(255,255,255,.5);
+      font-size: 9px; font-weight: 600; letter-spacing: .02em;
+      position: relative;
+      transition: background .15s, color .15s;
+    }
+    .rail-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); }
+    .rail-item.active { background: rgba(255,255,255,.1); color: var(--coral); }
+    .rail-item svg { width: 22px; height: 22px; }
+    .rail-dot {
+      position: absolute; top: 8px; right: 10px;
+      width: 8px; height: 8px; border-radius: 50%; background: var(--coral);
+      border: 2px solid var(--ink);
+    }
+    html.dark .rail-dot { border-color: #0a1210; }
+    .rail-spacer { flex: 1; }
+    .rail-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--mustard-soft); color: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px;
+      cursor: pointer;
+    }
+    html.dark .rail-avatar { color: #1a2e2e; background: var(--mustard); }
+    .rail-theme {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.6); margin-bottom: 8px;
+      transition: background .15s, color .15s;
+    }
+    .rail-theme:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .rail-theme svg { width: 18px; height: 18px; }
+
+    @media (max-width: 780px) {
+      .rail {
+        height: auto; flex-direction: row; justify-content: space-between;
+        padding: 10px 16px; position: sticky; z-index: 20;
+        overflow-x: auto;
+      }
+      .rail-logo { margin-bottom: 0; }
+      .rail-item { width: 44px; height: 44px; flex-shrink: 0; }
+      .rail-item span { display: none; }
+      .rail-spacer { display: none; }
+    }
+
+    /* ─── Main ───────────────────────────────────────────────── */
+    .main { padding: 24px 32px 40px; max-width: 1400px; width: 100%; }
+    @media (max-width: 780px) { .main { padding: 16px; } }
+
+    /* ─── Top bar ────────────────────────────────────────────── */
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      margin-bottom: 22px;
+    }
+    .search {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm);
+      padding: 10px 14px; width: 360px; max-width: 100%;
+      color: var(--ink-2); font-size: 13px;
+    }
+    .search svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .search input {
+      border: none; outline: none; background: transparent; color: var(--ink);
+      font-family: var(--sans); font-size: 13px; flex: 1; min-width: 0;
+    }
+    .search input::placeholder { color: var(--ink-3); }
+    .kbd {
+      font-family: var(--mono); font-size: 10px; color: var(--ink-2);
+      background: var(--bg); padding: 2px 6px; border-radius: 4px;
+      border: 1px solid var(--rule);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      background: var(--card); border: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; color: var(--ink-2);
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .icon-btn:hover { border-color: var(--ink-3); color: var(--ink); }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .icon-btn-badge {
+      position: absolute; top: 8px; right: 8px;
+      width: 8px; height: 8px; background: var(--coral); border-radius: 50%;
+      border: 2px solid var(--card);
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px; border-radius: var(--radius-sm);
+      background: var(--ink); color: var(--bg);
+      font-weight: 600; font-size: 13px;
+      transition: opacity .15s, transform .15s;
+      cursor: pointer;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary svg { width: 14px; height: 14px; }
+    html.dark .btn-primary { background: var(--coral); color: #fff; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 14px; border-radius: var(--radius-sm);
+      background: var(--card); color: var(--ink);
+      border: 1px solid var(--rule);
+      font-weight: 600; font-size: 13px;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-ghost:hover { border-color: var(--ink-3); }
+    @media (max-width: 600px) { .search { width: 180px; } .search input { font-size: 12px; } }
+
+    /* ─── Hero ───────────────────────────────────────────────── */
+    .hero {
+      background: var(--ink);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 30px 32px;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 28px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    html.dark .hero { background: #0a1210; }
+    @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+    .hero-blob-1 { position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; border-radius: 50%; background: var(--coral); opacity: .22; filter: blur(6px); pointer-events: none; }
+    .hero-blob-2 { position: absolute; right: 140px; bottom: -50px; width: 140px; height: 140px; border-radius: 50%; background: var(--mustard); opacity: .18; pointer-events: none; }
+    .hero-inner { position: relative; z-index: 1; }
+    .hero-eyebrow {
+      font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--coral); font-weight: 700; margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-family: var(--serif); font-size: 44px; font-weight: 400;
+      line-height: 1.05; letter-spacing: -.015em; margin: 0;
+    }
+    .hero h1 em { font-style: italic; font-weight: 400; }
+    .hero p {
+      color: rgba(255,255,255,.72); font-size: 14px; margin: 12px 0 0; max-width: 420px;
+      line-height: 1.55;
+    }
+    .hero p b { color: var(--coral); font-weight: 600; }
+    .hero-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; position: relative; z-index: 1; align-content: start; }
+    .hero-stat {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .hero-stat-label {
+      font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(255,255,255,.5); margin-bottom: 6px; font-weight: 600;
+    }
+    .hero-stat-num {
+      font-family: var(--serif); font-size: 30px; font-weight: 400; line-height: 1;
+      letter-spacing: -.01em;
+    }
+    .hero-stat-num .fraction { color: rgba(255,255,255,.35); font-size: 15px; }
+    .hero-stat-sub { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 6px; }
+
+    /* ─── Quick actions ──────────────────────────────────────── */
+    .quick-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px;
+    }
+    @media (max-width: 900px) { .quick-row { grid-template-columns: repeat(2, 1fr); } }
+    .quick {
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+      box-shadow: var(--shadow-sm);
+      text-align: left;
+    }
+    .quick:hover { transform: translateY(-1px); border-color: var(--ink-3); box-shadow: var(--shadow-md); }
+    .quick-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .quick-icon svg { width: 20px; height: 20px; }
+    .quick-label { font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .quick-sub { font-size: 11px; color: var(--ink-2); margin-top: 3px; }
+
+    /* ─── Grid layout ────────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+    @media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ─── Section headings ───────────────────────────────────── */
+    .section-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin: 10px 2px 4px;
+    }
+    .section-title { font-family: var(--serif); font-size: 24px; font-weight: 400; letter-spacing: -.01em; }
+    .section-link {
+      font-size: 12px; color: var(--teal); font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer;
+    }
+    .section-link:hover { text-decoration: underline; }
+
+    /* ─── Today card ─────────────────────────────────────────── */
+    .today {
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+      padding: 22px; box-shadow: var(--shadow-sm);
+    }
+    .today-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .today-date { font-family: var(--serif); font-size: 20px; }
+    .today-pill {
+      font-size: 11px; background: var(--teal-soft); color: var(--teal);
+      padding: 5px 10px; border-radius: 20px; font-weight: 600;
+    }
+    .class-row {
+      display: grid; grid-template-columns: 64px 1fr auto; gap: 14px;
+      padding: 12px 14px; border-radius: 14px; align-items: center; margin-bottom: 6px;
+      background: var(--bg);
+    }
+    .class-row.now { background: var(--coral-soft); }
+    .time-col { font-family: var(--serif); font-size: 16px; line-height: 1.2; }
+    .time-to { font-size: 11px; color: var(--ink-2); font-family: var(--sans); font-weight: 500; margin-top: 2px; }
+    .class-title { font-weight: 600; font-size: 14px; }
+    .class-sub {
+      font-size: 12px; color: var(--ink-2); margin-top: 3px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .room-tag {
+      font-size: 11px; background: var(--card); padding: 3px 8px; border-radius: 6px;
+      font-family: var(--mono); font-weight: 600; border: 1px solid var(--rule);
+    }
+    .class-row.now .room-tag { background: #fff; }
+    html.dark .class-row.now .room-tag { background: var(--card); }
+    .now-chip {
+      font-size: 10px; background: var(--coral); color: #fff;
+      padding: 4px 9px; border-radius: 20px; font-weight: 700; letter-spacing: .04em;
+    }
+
+    /* ─── Aulas grid ─────────────────────────────────────────── */
+    .aulas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 600px) { .aulas-grid { grid-template-columns: repeat(2, 1fr); } }
+    .aula {
+      background: var(--card); border: 1px solid var(--rule); border-radius: 14px;
+      padding: 14px; position: relative; box-shadow: var(--shadow-sm);
+      transition: border-color .15s, transform .15s;
+    }
+    .aula:hover { border-color: var(--ink-3); transform: translateY(-1px); }
+    .aula-dot {
+      position: absolute; top: 14px; right: 14px;
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .aula-dot.disponible { background: var(--teal); }
+    .aula-dot.ocupada { background: var(--coral); }
+    .aula-dot.mantenimiento { background: var(--mustard); }
+    .aula-code { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+    .aula-type { font-size: 11px; color: var(--ink-2); margin: 4px 0 10px; line-height: 1.3; }
+    .aula-bar { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+    .aula-bar-fill { height: 100%; transition: width .4s ease; }
+    .aula-bar-fill.disponible { background: var(--teal); }
+    .aula-bar-fill.ocupada { background: var(--coral); }
+    .aula-bar-fill.mantenimiento { background: var(--mustard); }
+    .aula-cap { font-size: 10px; color: var(--ink-2); font-family: var(--mono); }
+
+    /* ─── Event cards ────────────────────────────────────────── */
+    .event-card {
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
+      padding: 14px; display: flex; gap: 14px; box-shadow: var(--shadow-sm);
+      transition: transform .15s, border-color .15s;
+    }
+    .event-card:hover { transform: translateY(-1px); border-color: var(--ink-3); }
+    .event-date {
+      width: 56px; height: 56px; border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .event-day { font-family: var(--serif); font-size: 22px; font-weight: 400; line-height: 1; letter-spacing: -.01em; }
+    .event-mon { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; margin-top: 3px; font-weight: 700; }
+    .event-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+    .event-meta {
+      font-size: 12px; color: var(--ink-2); margin-top: 6px;
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .event-cat {
+      display: inline-block; margin-top: 8px;
+      font-size: 10px; padding: 3px 9px; border-radius: 20px;
+      font-weight: 700; letter-spacing: .03em;
+    }
+
+    /* ─── Notifications ──────────────────────────────────────── */
+    .notif-card {
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+      padding: 18px 20px; box-shadow: var(--shadow-sm);
+    }
+    .notif-row {
+      display: grid; grid-template-columns: 36px 1fr; gap: 12px;
+      padding: 12px 0; align-items: flex-start;
+      border-bottom: 1px solid var(--rule);
+    }
+    .notif-row:last-child { border-bottom: none; padding-bottom: 2px; }
+    .notif-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-weight: 400; font-size: 20px;
+      flex-shrink: 0;
+    }
+    .notif-title { font-size: 13px; font-weight: 600; }
+    .notif-msg { font-size: 12px; color: var(--ink-2); margin-top: 4px; line-height: 1.5; }
+    .notif-time { font-size: 10px; color: var(--ink-3); margin-top: 6px; font-family: var(--mono); }
+
+    /* ─── Skeletons ──────────────────────────────────────────── */
+    .skel {
+      background: linear-gradient(90deg, var(--rule) 25%, var(--rule-2) 50%, var(--rule) 75%);
       background-size: 200% 100%;
-      animation: skeleton 1.5s ease-in-out infinite;
+      animation: shimmer 1.6s ease-in-out infinite;
+      border-radius: 6px;
     }
-    .dark .skeleton {
-      background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
-      background-size: 200% 100%;
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ─── API status pill ────────────────────────────────────── */
+    .api-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--ink-2); font-family: var(--mono);
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--card); border: 1px solid var(--rule);
     }
-    @keyframes skeleton {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    .api-pill .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3);
     }
-    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    .dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; }
+    .api-pill.healthy .dot { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+    .api-pill.error .dot { background: var(--coral); }
+
+    .empty { padding: 24px; text-align: center; color: var(--ink-2); font-size: 13px; }
+
+    /* ─── Fade in ────────────────────────────────────────────── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeUp .4s ease-out both; }
+
+    /* ─── Gestión / Management ───────────────────────────────── */
+    .gestion-card {
+      background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+      padding: 24px; box-shadow: var(--shadow-sm);
+      margin-top: 12px;
+    }
+    .gestion-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .gestion-head .lead {
+      font-family: var(--serif); font-size: 26px; line-height: 1.1;
+      letter-spacing: -.01em; font-weight: 400;
+    }
+    .gestion-head .lead em { font-style: italic; }
+    .gestion-head .lead-sub {
+      font-size: 12px; color: var(--ink-2); margin-top: 4px; max-width: 540px;
+    }
+    .tabs {
+      display: flex; gap: 2px; border-bottom: 1px solid var(--rule);
+      margin-bottom: 18px; overflow-x: auto;
+    }
+    .tab {
+      padding: 10px 14px; font-size: 13px; font-weight: 600;
+      color: var(--ink-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .tab .count {
+      font-family: var(--mono); font-size: 10px;
+      background: var(--bg); color: var(--ink-2);
+      padding: 2px 6px; border-radius: 10px; font-weight: 600;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.active { color: var(--ink); border-bottom-color: var(--coral); }
+    .tab.active .count { background: var(--coral-soft); color: var(--coral); }
+
+    .table-toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .table-toolbar .filter {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radius-sm);
+      padding: 8px 12px; font-size: 13px; flex: 1; min-width: 180px; max-width: 320px;
+      color: var(--ink-2);
+    }
+    .table-toolbar .filter input {
+      border: none; outline: none; background: transparent; color: var(--ink);
+      font-family: var(--sans); font-size: 13px; flex: 1; min-width: 0;
+    }
+    .table-toolbar .filter svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .table-toolbar .filter input::placeholder { color: var(--ink-3); }
+
+    .table-wrap { border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; overflow-x: auto; }
+    table.gtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.gtable thead th {
+      text-align: left; padding: 12px 16px;
+      background: var(--card-2);
+      font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--ink-2); font-weight: 700;
+      border-bottom: 1px solid var(--rule);
+      white-space: nowrap;
+    }
+    table.gtable tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: middle;
+    }
+    table.gtable tbody tr:last-child td { border-bottom: none; }
+    table.gtable tbody tr:hover { background: var(--card-2); }
+    table.gtable tbody td .mono-cell {
+      font-family: var(--mono); font-size: 12px; font-weight: 600;
+    }
+    table.gtable tbody td .strong { font-weight: 600; }
+    .row-actions { display: inline-flex; gap: 6px; }
+    .row-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 8px;
+      background: transparent; color: var(--ink-2);
+      border: 1px solid var(--rule);
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .row-btn:hover { color: var(--ink); border-color: var(--ink-3); background: var(--card-2); }
+    .row-btn.danger:hover { color: var(--coral); border-color: var(--coral); background: var(--coral-soft); }
+    .row-btn svg { width: 14px; height: 14px; }
+
+    /* status & type badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge.dot::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+    .badge.disponible { background: var(--teal-soft); color: var(--teal); }
+    .badge.ocupada { background: var(--coral-soft); color: var(--coral); }
+    .badge.mantenimiento { background: var(--mustard-soft); color: var(--mustard); }
+    .badge.info { background: var(--lilac-soft); color: var(--lilac); }
+    .badge.warning { background: var(--mustard-soft); color: var(--mustard); }
+    .badge.success { background: var(--teal-soft); color: var(--teal); }
+    .badge.danger { background: var(--coral-soft); color: var(--coral); }
+    .badge.neutral { background: var(--bg); color: var(--ink-2); }
+
+    /* ─── Modal ──────────────────────────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(26,46,46,.45);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 200;
+      animation: backdropIn .2s ease-out;
+    }
+    html.dark .modal-backdrop { background: rgba(0,0,0,.6); }
+    .modal-backdrop.open { display: flex; }
+    @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: min(560px, 92vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: modalIn .25s cubic-bezier(.2,.9,.4,1);
+    }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 8px;
+    }
+    .modal-head h3 {
+      font-family: var(--serif); font-size: 26px; font-weight: 400;
+      margin: 0; letter-spacing: -.01em; line-height: 1.1;
+    }
+    .modal-head h3 em { font-style: italic; }
+    .modal-head .close {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-2);
+      transition: background .15s, color .15s;
+    }
+    .modal-head .close:hover { background: var(--bg); color: var(--ink); }
+    .modal-head .close svg { width: 16px; height: 16px; }
+    .modal-sub { font-size: 12px; color: var(--ink-2); margin: 0 0 18px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label {
+      display: block; font-size: 11px; letter-spacing: .08em;
+      text-transform: uppercase; font-weight: 700; color: var(--ink-2);
+      margin-bottom: 6px;
+    }
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      width: 100%;
+      background: var(--card-2);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus { border-color: var(--teal); background: var(--card); }
+    .form-row textarea { min-height: 70px; resize: vertical; }
+    .form-row .hint { font-size: 11px; color: var(--ink-3); margin-top: 4px; font-family: var(--mono); }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 520px) { .form-grid-2 { grid-template-columns: 1fr; } }
+    .modal-actions {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-top: 22px;
+      border-top: 1px solid var(--rule);
+      padding-top: 18px;
+    }
+    .form-error {
+      background: var(--coral-soft); color: var(--coral);
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .form-error.show { display: block; }
+
+    /* ─── Toast ──────────────────────────────────────────────── */
+    .toast-stack {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; flex-direction: column; gap: 8px;
+      z-index: 300;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-left: 4px solid var(--teal);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-md);
+      font-size: 13px;
+      max-width: 360px;
+      pointer-events: auto;
+      animation: toastIn .25s cubic-bezier(.2,.9,.4,1);
+    }
+    .toast.error { border-left-color: var(--coral); }
+    .toast.warn { border-left-color: var(--mustard); }
+    .toast .toast-title { font-weight: 700; margin-bottom: 2px; }
+    .toast .toast-msg { color: var(--ink-2); font-size: 12px; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+    .toast.leaving { animation: toastOut .2s forwards; }
   </style>
 </head>
+<body>
+  <div class="shell">
+    <!-- ─────────── Rail ─────────── -->
+    <nav class="rail" aria-label="Navegación principal">
+      <a href="#" class="rail-logo" aria-label="SmartCampus inicio">S</a>
 
-<body class="bg-gradient-to-br from-slate-50 via-white to-brand-50 dark:from-gray-950 dark:via-gray-900 dark:to-brand-900/30 text-gray-900 dark:text-gray-100 min-h-screen">
+      <a href="#" class="rail-item active" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+        <span>Inicio</span>
+      </a>
+      <a href="#aulas" class="rail-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+        <span>Aulas</span>
+      </a>
+      <a href="#eventos" class="rail-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+        <span>Eventos</span>
+      </a>
+      <a href="#horarios" class="rail-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span>Horario</span>
+      </a>
+      <a href="#avisos" class="rail-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0v5l1.5 2.5h-15L6 13z"/><path d="M10 19a2 2 0 004 0"/></svg>
+        <span>Avisos</span>
+        <span class="rail-dot"></span>
+      </a>
+      <a href="#gestion" class="rail-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Gestión</span>
+      </a>
 
-  <!-- ─────────── HEADER ─────────── -->
-  <header class="sticky top-0 z-50 glass border-b border-gray-200 dark:border-gray-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-lg sm:text-xl font-bold leading-tight">SmartCampus <span class="text-brand-600 dark:text-brand-400">Services</span></h1>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Dashboard universitario</p>
-        </div>
-      </div>
+      <div class="rail-spacer"></div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Live status -->
-        <div id="status-pill" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-          <span id="status-dot" class="w-2 h-2 rounded-full bg-gray-400"></span>
-          <span id="status-text">Conectando...</span>
-        </div>
-
-        <!-- Theme toggle -->
-        <button id="theme-toggle" type="button" aria-label="Cambiar tema"
-                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-          <svg id="icon-sun"  class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        </button>
-
-        <a href="#gestion"
-           class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          Gestión
-        </a>
-        <a href="/docs" target="_blank" rel="noopener"
-           class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          API
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <!-- ─────────── HERO ─────────── -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6 animate-fade-in">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Bienvenida -->
-      <div class="lg:col-span-2 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white p-8 shadow-xl shadow-brand-500/20 relative overflow-hidden">
-        <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
-        <div class="absolute right-20 bottom-0 w-32 h-32 rounded-full bg-white/5 blur-xl"></div>
-        <div class="relative z-10">
-          <p class="text-brand-100 text-sm uppercase tracking-wider font-medium">Plataforma universitaria</p>
-          <h2 id="hero-message" class="text-3xl sm:text-4xl font-extrabold mt-2 mb-3">Cargando bienvenida...</h2>
-          <p class="text-brand-100 text-base max-w-xl">
-            Gestión integral del campus: aulas, eventos, horarios y notificaciones — todo en un solo lugar.
-          </p>
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a href="#servicios" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-brand-700 font-semibold rounded-xl hover:bg-brand-50 transition shadow">
-              Explorar servicios
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-            </a>
-            <a href="/docs" target="_blank" rel="noopener"
-               class="inline-flex items-center gap-2 px-5 py-2.5 border border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition">
-              Ver API
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats -->
-      <div class="grid grid-cols-2 lg:grid-cols-1 gap-4">
-        <div class="rounded-2xl bg-white dark:bg-gray-900 p-5 shadow border border-gray-100 dark:border-gray-800">
-          <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">Versión</p>
-          <p id="stat-version" class="text-2xl font-bold mt-1">—</p>
-        </div>
-        <div class="rounded-2xl bg-white dark:bg-gray-900 p-5 shadow border border-gray-100 dark:border-gray-800">
-          <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">Entorno</p>
-          <p id="stat-env" class="text-2xl font-bold mt-1 capitalize">—</p>
-        </div>
-        <div class="rounded-2xl bg-white dark:bg-gray-900 p-5 shadow border border-gray-100 dark:border-gray-800 col-span-2 lg:col-span-1">
-          <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">Servidor</p>
-          <p id="stat-host" class="text-sm font-mono mt-1 truncate">—</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─────────── SERVICIOS ─────────── -->
-  <section id="servicios" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-2xl font-bold">Servicios disponibles</h2>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Selecciona un servicio para ver su contenido en vivo</p>
-      </div>
-      <button id="btn-refresh-services" type="button"
-              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        Refrescar
+      <button class="rail-theme" id="theme-toggle" aria-label="Cambiar tema">
+        <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8 8 0 119.5 3.5a7 7 0 0011 11z"/></svg>
+        <svg id="icon-sun" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
       </button>
-    </div>
-    <div id="servicios-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      <!-- Skeleton placeholders -->
-      <div class="skeleton rounded-2xl h-44"></div>
-      <div class="skeleton rounded-2xl h-44"></div>
-      <div class="skeleton rounded-2xl h-44"></div>
-      <div class="skeleton rounded-2xl h-44"></div>
-    </div>
-  </section>
+      <div class="rail-avatar" id="avatar">JA</div>
+    </nav>
 
-  <!-- ─────────── DETALLE DEL SERVICIO ─────────── -->
-  <section id="detalle" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 hidden">
-    <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg overflow-hidden animate-slide-up">
-      <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div id="detalle-icon" class="w-10 h-10 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center"></div>
-          <div>
-            <h3 id="detalle-title" class="text-lg font-bold">—</h3>
-            <p id="detalle-endpoint" class="text-xs font-mono text-gray-500"></p>
+    <!-- ─────────── Main ─────────── -->
+    <main class="main">
+      <div class="topbar">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" placeholder="Buscar aulas, materias, eventos…" />
+          <span class="kbd">⌘K</span>
+        </label>
+        <div class="topbar-right">
+          <span class="api-pill" id="api-pill"><span class="dot"></span><span id="api-pill-text">conectando…</span></span>
+          <a href="/docs" target="_blank" class="icon-btn" title="API docs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+          </a>
+          <button class="icon-btn" aria-label="Notificaciones">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0v5l1.5 2.5h-15L6 13z"/><path d="M10 19a2 2 0 004 0"/></svg>
+            <span class="icon-btn-badge"></span>
+          </button>
+          <button class="btn-primary" onclick="goToGestion('aulas')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Reservar aula
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <section class="hero fade-in">
+        <div class="hero-blob-1"></div>
+        <div class="hero-blob-2"></div>
+        <div class="hero-inner">
+          <div class="hero-eyebrow" id="hero-date">Cargando…</div>
+          <h1>
+            Buenas tardes,<br />
+            <em id="hero-name">Joshua</em>.
+          </h1>
+          <p id="hero-tagline">
+            Tu próxima clase empieza en <b>12 minutos</b> en el Lab B-301.
+            Tienes eventos esta semana y avisos nuevos.
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-label">Clases hoy</div>
+            <div class="hero-stat-num" id="stat-clases">—</div>
+            <div class="hero-stat-sub" id="stat-clases-sub">&nbsp;</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Aulas libres</div>
+            <div class="hero-stat-num" id="stat-aulas">—<span class="fraction" id="stat-aulas-total"></span></div>
+            <div class="hero-stat-sub" id="stat-aulas-sub">&nbsp;</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Próx. evento</div>
+            <div class="hero-stat-num" id="stat-evento">—</div>
+            <div class="hero-stat-sub" id="stat-evento-sub">&nbsp;</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Avisos</div>
+            <div class="hero-stat-num" id="stat-avisos">—</div>
+            <div class="hero-stat-sub" id="stat-avisos-sub">&nbsp;</div>
           </div>
         </div>
-        <button id="btn-close-detalle" type="button"
-                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" aria-label="Cerrar">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </section>
+
+      <!-- Quick actions -->
+      <section class="quick-row fade-in" style="animation-delay:.05s">
+        <a href="#aulas" class="quick">
+          <div class="quick-icon" style="background:var(--teal-soft);color:var(--teal)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+          </div>
+          <div>
+            <div class="quick-label">Reservar aula</div>
+            <div class="quick-sub" id="quick-aulas-sub">—</div>
+          </div>
+        </a>
+        <a href="#eventos" class="quick">
+          <div class="quick-icon" style="background:var(--coral-soft);color:var(--coral)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 6.3L21 9l-5 4.3L17.5 20 12 16.5 6.5 20 8 13.3 3 9l6.6-.7z"/></svg>
+          </div>
+          <div>
+            <div class="quick-label">Inscribir evento</div>
+            <div class="quick-sub" id="quick-eventos-sub">—</div>
+          </div>
+        </a>
+        <a href="#horarios" class="quick">
+          <div class="quick-icon" style="background:var(--mustard-soft);color:var(--mustard)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </div>
+          <div>
+            <div class="quick-label">Mi horario</div>
+            <div class="quick-sub">Ver semana completa</div>
+          </div>
+        </a>
+        <a href="/docs" target="_blank" class="quick">
+          <div class="quick-icon" style="background:var(--lilac-soft);color:var(--lilac)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div>
+            <div class="quick-label">API & docs</div>
+            <div class="quick-sub">Swagger UI</div>
+          </div>
+        </a>
+      </section>
+
+      <!-- Two-col -->
+      <div class="grid-2">
+        <!-- Left column -->
+        <div class="col">
+          <!-- Today -->
+          <div class="section-head" id="horarios">
+            <div class="section-title">Tu día</div>
+            <a class="section-link" onclick="goToGestion('horarios')">Gestionar →</a>
+          </div>
+          <div class="today fade-in" style="animation-delay:.1s">
+            <div class="today-head">
+              <div class="today-date" id="today-date">—</div>
+              <div class="today-pill" id="today-pill">—</div>
+            </div>
+            <div id="today-list">
+              <div class="skel" style="height:66px;margin-bottom:6px"></div>
+              <div class="skel" style="height:66px;margin-bottom:6px"></div>
+              <div class="skel" style="height:66px"></div>
+            </div>
+          </div>
+
+          <!-- Aulas -->
+          <div class="section-head" id="aulas" style="margin-top:22px">
+            <div class="section-title">Aulas del campus</div>
+            <a class="section-link" id="aulas-link" onclick="goToGestion('aulas')">Gestionar →</a>
+          </div>
+          <div class="aulas-grid fade-in" id="aulas-grid" style="animation-delay:.15s">
+            <div class="skel" style="height:92px"></div>
+            <div class="skel" style="height:92px"></div>
+            <div class="skel" style="height:92px"></div>
+            <div class="skel" style="height:92px"></div>
+            <div class="skel" style="height:92px"></div>
+            <div class="skel" style="height:92px"></div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="col">
+          <div class="section-head" id="eventos">
+            <div class="section-title">Próximos eventos</div>
+            <a class="section-link" id="eventos-link" onclick="goToGestion('eventos')">Gestionar →</a>
+          </div>
+          <div id="eventos-list" class="col fade-in" style="animation-delay:.2s; gap: 10px">
+            <div class="skel" style="height:88px"></div>
+            <div class="skel" style="height:88px"></div>
+            <div class="skel" style="height:88px"></div>
+          </div>
+
+          <div class="section-head" id="avisos" style="margin-top:22px">
+            <div class="section-title">Avisos</div>
+            <a class="section-link" id="avisos-link" onclick="goToGestion('notificaciones')">Gestionar →</a>
+          </div>
+          <div class="notif-card fade-in" id="notif-list" style="animation-delay:.25s">
+            <div class="skel" style="height:60px;margin-bottom:8px"></div>
+            <div class="skel" style="height:60px;margin-bottom:8px"></div>
+            <div class="skel" style="height:60px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────── Gestión / Management ─────────── -->
+      <div class="section-head" id="gestion" style="margin-top:32px">
+        <div class="section-title">Gestión de servicios</div>
+        <span class="api-pill"><span class="dot" style="background:var(--coral);box-shadow:0 0 6px var(--coral)"></span>CRUD en vivo</span>
+      </div>
+      <section class="gestion-card fade-in" style="animation-delay:.1s">
+        <div class="gestion-head">
+          <div>
+            <div class="lead">Administra <em>aulas, eventos, horarios</em> y avisos.</div>
+            <div class="lead-sub">Crea, edita y elimina registros directamente sobre la API. Los cambios viven en memoria del contenedor — perfecto para demos y prototipos.</div>
+          </div>
+          <button class="btn-primary" id="btn-create" onclick="openCreateModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            <span id="btn-create-label">Nueva aula</span>
+          </button>
+        </div>
+
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="aulas" onclick="setTab('aulas')">Aulas <span class="count" id="count-aulas">—</span></button>
+          <button class="tab" data-tab="eventos" onclick="setTab('eventos')">Eventos <span class="count" id="count-eventos">—</span></button>
+          <button class="tab" data-tab="horarios" onclick="setTab('horarios')">Horarios <span class="count" id="count-horarios">—</span></button>
+          <button class="tab" data-tab="notificaciones" onclick="setTab('notificaciones')">Notificaciones <span class="count" id="count-notificaciones">—</span></button>
+        </div>
+
+        <div class="table-toolbar">
+          <label class="filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="text" id="table-filter" placeholder="Filtrar registros…" oninput="renderTable()" />
+          </label>
+          <button class="btn-ghost" onclick="reloadCurrent()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+            Recargar
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="gtable">
+            <thead id="table-head"><tr><th>—</th></tr></thead>
+            <tbody id="table-body">
+              <tr><td><div class="skel" style="height:24px"></div></td></tr>
+              <tr><td><div class="skel" style="height:24px"></div></td></tr>
+              <tr><td><div class="skel" style="height:24px"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ─────────── Modal ─────────── -->
+  <div class="modal-backdrop" id="modal-backdrop" onclick="onBackdropClick(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div>
+          <h3 id="modal-title">Nuevo registro</h3>
+        </div>
+        <button class="close" onclick="closeModal()" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
-      <div id="detalle-body" class="p-6"></div>
-    </div>
-  </section>
-
-  <!-- ─────────── INFO DEL SISTEMA ─────────── -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <h2 class="text-2xl font-bold mb-6">Información del sistema</h2>
-    <div id="info-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Llenado dinámicamente -->
-    </div>
-  </section>
-
-  <!-- ─────────── GESTIÓN DE DATOS (CRUD) ─────────── -->
-  <section id="gestion" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 scroll-mt-24">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
-      <div>
-        <h2 class="text-2xl font-bold flex items-center gap-2">
-          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-          </span>
-          Gestión de datos
-        </h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Crea, edita y elimina registros directamente en la API.
-          <span class="ml-1 text-amber-600 dark:text-amber-400">⚠ Los cambios se reinician al redespliegar el contenedor.</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="border-b border-gray-200 dark:border-gray-800 mb-6 overflow-x-auto scrollbar-thin">
-      <div id="gestion-tabs" class="inline-flex gap-1 min-w-max">
-        <button data-resource="/aulas"          class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Aulas</button>
-        <button data-resource="/eventos"        class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Eventos</button>
-        <button data-resource="/horarios"       class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Horarios</button>
-        <button data-resource="/notificaciones" class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Notificaciones</button>
-      </div>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="flex items-center justify-between mb-4 gap-2">
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        <span id="gestion-count">—</span> registros
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="gestion-refresh" type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Refrescar
-        </button>
-        <button id="gestion-create" type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition shadow shadow-brand-500/30">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-          Nuevo
-        </button>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-      <div id="gestion-table" class="overflow-x-auto scrollbar-thin">
-        <div class="p-8 text-center text-gray-500">Selecciona una pestaña arriba</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─────────── MODAL ─────────── -->
-  <div id="modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div id="modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"></div>
-    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-lg max-h-[90vh] flex flex-col animate-slide-up">
-      <header class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <h3 id="modal-title" class="text-lg font-bold">—</h3>
-        <button id="modal-close" type="button" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </header>
-      <form id="modal-form" class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin"></form>
-      <footer class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-2 bg-gray-50 dark:bg-gray-900/60 rounded-b-2xl">
-        <button type="button" id="modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">Cancelar</button>
-        <button type="button" id="modal-submit" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
-          <span id="modal-submit-spinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-          <span id="modal-submit-text">Guardar</span>
-        </button>
-      </footer>
+      <p class="modal-sub" id="modal-sub">Completa los campos para crear un nuevo registro.</p>
+      <div class="form-error" id="form-error"></div>
+      <form id="modal-form" onsubmit="submitForm(event)">
+        <div id="form-fields"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" id="form-submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>
+            Guardar
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- ─────────── TOAST ─────────── -->
-  <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+  <!-- ─────────── Toast stack ─────────── -->
+  <div class="toast-stack" id="toast-stack"></div>
 
-  <!-- ─────────── FOOTER ─────────── -->
-  <footer class="border-t border-gray-200 dark:border-gray-800 mt-10 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
-      <p>© <span id="year"></span> SmartCampus Services — Hecho con FastAPI + Tailwind</p>
-      <div class="flex items-center gap-4">
-        <a href="/docs"   target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400">Swagger</a>
-        <a href="/redoc"  target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400">ReDoc</a>
-        <a href="/health" target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400">Health</a>
-        <a href="https://github.com/Joxarx/SmartCampus" target="_blank" rel="noopener" class="hover:text-brand-600 dark:hover:text-brand-400 inline-flex items-center gap-1">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
-        </a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ─────────── SCRIPT ─────────── -->
+  <!-- ─────────── Script ─────────── -->
   <script>
-    // ============================================================
-    // Util: fetch JSON con manejo de errores
-    // ============================================================
-    async function getJSON(path) {
-      const res = await fetch(path, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
+    /* ─── Theme ─────────────────────────────────────────────── */
+    const htmlEl = document.documentElement;
+    function setTheme(dark) {
+      htmlEl.classList.toggle('dark', !!dark);
+      document.getElementById('icon-moon').style.display = dark ? 'none' : '';
+      document.getElementById('icon-sun').style.display  = dark ? '' : 'none';
     }
-
-    // ============================================================
-    // Tema (light/dark)
-    // ============================================================
-    const root = document.documentElement;
-    const stored = localStorage.getItem('theme');
-    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      root.classList.add('dark');
-    }
+    const storedTheme = localStorage.getItem('smartcampus-theme');
+    const initialDark = storedTheme
+      ? storedTheme === 'dark'
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(initialDark);
     document.getElementById('theme-toggle').addEventListener('click', () => {
-      root.classList.toggle('dark');
-      localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+      const next = !htmlEl.classList.contains('dark');
+      setTheme(next);
+      localStorage.setItem('smartcampus-theme', next ? 'dark' : 'light');
     });
 
-    // ============================================================
-    // Iconos por servicio
-    // ============================================================
-    const ICONS = {
-      building: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0v-5h-3v5M5 21H3m2 0V9m4 4h6"/></svg>',
-      calendar: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
-      clock:    '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-      bell:     '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>',
+    /* ─── Fetch helpers ─────────────────────────────────────── */
+    // Mocks: fallback used only when GET fetch fails (offline preview).
+    // CRUD calls (POST/PUT/DELETE) always hit the real API.
+    const MOCKS = {
+      '/health':  { status: 'healthy', version: '1.3.0', environment: 'production', host: 'ip-10-0-1-42' },
+      '/info':    { app: 'SmartCampus Services', version: '1.3.0', environment: 'production', python_version: '3.11.7', hostname: 'ip-10-0-1-42', timestamp: new Date().toISOString() },
+      '/aulas':   { total: 6, aulas: [
+        { id: 'A-101', edificio: 'Edificio A', tipo: 'Aula', capacidad: 40, estado: 'disponible', equipamiento: ['proyector','pizarra'] },
+        { id: 'A-205', edificio: 'Edificio A', tipo: 'Aula', capacidad: 35, estado: 'ocupada', equipamiento: ['proyector'] },
+        { id: 'B-301', edificio: 'Edificio B', tipo: 'Laboratorio de Cómputo', capacidad: 30, estado: 'disponible', equipamiento: ['30 PCs','proyector','a/c'] },
+        { id: 'B-302', edificio: 'Edificio B', tipo: 'Laboratorio de Redes', capacidad: 24, estado: 'mantenimiento', equipamiento: ['routers Cisco'] },
+        { id: 'C-110', edificio: 'Edificio C', tipo: 'Auditorio', capacidad: 200, estado: 'disponible', equipamiento: ['sonido','proyector 4K'] },
+        { id: 'D-001', edificio: 'Edificio D', tipo: 'Sala de Estudio', capacidad: 12, estado: 'ocupada', equipamiento: ['pizarra','TV'] },
+      ]},
+      '/eventos': { total: 5, eventos: [
+        { id: 1, titulo: 'Semana de la Ingeniería 2026',  fecha: '2026-05-04', hora: '09:00', lugar: 'Auditorio C-110', categoria: 'académico' },
+        { id: 2, titulo: 'Hackathon SmartCampus',          fecha: '2026-05-15', hora: '08:00', lugar: 'Lab B-301',       categoria: 'competencia' },
+        { id: 3, titulo: 'Conferencia: IA en la Educación',fecha: '2026-05-22', hora: '16:00', lugar: 'Auditorio C-110', categoria: 'conferencia' },
+        { id: 4, titulo: 'Feria de Empleo 2026',           fecha: '2026-06-02', hora: '10:00', lugar: 'Plaza Central',   categoria: 'profesional' },
+        { id: 5, titulo: 'Taller de DevOps con AWS',       fecha: '2026-06-10', hora: '14:00', lugar: 'Lab B-301',       categoria: 'taller' },
+      ]},
+      '/horarios': { total: 6, horarios: [
+        { id: 1, materia: 'Cálculo Diferencial',    profesor: 'Dra. M. López',    dia: 'Lunes',     hora: '07:00 - 09:00', aula: 'A-101' },
+        { id: 2, materia: 'Programación Web',       profesor: 'Ing. R. Pérez',    dia: 'Lunes',     hora: '09:00 - 11:00', aula: 'B-301' },
+        { id: 3, materia: 'Bases de Datos',         profesor: 'Dr. J. Hernández', dia: 'Martes',    hora: '10:00 - 12:00', aula: 'B-301' },
+        { id: 4, materia: 'Redes de Computadoras',  profesor: 'Mtro. A. Ramírez', dia: 'Miércoles', hora: '08:00 - 10:00', aula: 'B-302' },
+        { id: 5, materia: 'DevOps y Cloud',         profesor: 'Ing. J. Arias',    dia: 'Jueves',    hora: '16:00 - 18:00', aula: 'B-301' },
+        { id: 6, materia: 'Inteligencia Artificial',profesor: 'Dra. S. García',   dia: 'Viernes',   hora: '11:00 - 13:00', aula: 'A-205' },
+      ]},
+      '/notificaciones': { total: 5, notificaciones: [
+        { id: 1, tipo: 'info',    titulo: 'Mantenimiento programado', mensaje: 'El sistema estará en mantenimiento el sábado 02:00-04:00.', fecha: '2026-04-21' },
+        { id: 2, tipo: 'warning', titulo: 'Cambio de aula',            mensaje: 'La clase de DevOps del jueves se traslada al Lab B-302.',    fecha: '2026-04-20' },
+        { id: 3, tipo: 'success', titulo: 'Inscripción abierta',        mensaje: 'Ya puedes inscribirte al Hackathon SmartCampus 2026.',        fecha: '2026-04-19' },
+        { id: 4, tipo: 'danger',  titulo: 'Cierre temporal',            mensaje: 'El laboratorio B-302 estará cerrado por mantenimiento.',      fecha: '2026-04-18' },
+        { id: 5, tipo: 'info',    titulo: 'Nuevo servicio',             mensaje: 'El sistema de notificaciones push ya está disponible.',       fecha: '2026-04-17' },
+      ]},
     };
 
-    // ============================================================
-    // Carga inicial
-    // ============================================================
-    async function loadRoot() {
+    async function getJSON(path) {
       try {
-        const data = await getJSON('/');
-        document.getElementById('hero-message').textContent = data.message || 'SmartCampus Services';
+        const res = await fetch(path, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
       } catch (e) {
-        document.getElementById('hero-message').textContent = 'SmartCampus Services';
+        if (MOCKS[path]) return MOCKS[path];
+        throw e;
       }
     }
+    async function sendJSON(method, path, body) {
+      const res = await fetch(path, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      });
+      const text = await res.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        if (data && data.detail) {
+          msg = Array.isArray(data.detail)
+            ? data.detail.map(d => `${(d.loc || []).slice(1).join('.')}: ${d.msg}`).join(' · ')
+            : String(data.detail);
+        }
+        const err = new Error(msg);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
+    }
 
+    /* ─── Helpers ───────────────────────────────────────────── */
+    const MES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const MES_ES_LONG = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const DIA_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+    function escapeHTML(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function parseTime(hhmm) {
+      if (!hhmm) return null;
+      const m = String(hhmm).match(/(\d{1,2}):(\d{2})/);
+      if (!m) return null;
+      return { h: +m[1], m: +m[2] };
+    }
+    function parseRange(str) {
+      if (!str) return null;
+      const parts = String(str).split(/[-–]/).map(s => s.trim());
+      const a = parseTime(parts[0]);
+      const b = parts[1] ? parseTime(parts[1]) : null;
+      return { start: a, end: b };
+    }
+    function relativeFull(iso) {
+      if (!iso) return '';
+      const d = new Date(iso + 'T00:00:00');
+      const today = new Date(); today.setHours(0,0,0,0);
+      const days = Math.round((today - d) / 86400000);
+      if (days === 0) return 'hoy';
+      if (days === 1) return 'ayer';
+      if (days > 1 && days < 14) return `hace ${days} días`;
+      return `${d.getDate()} ${MES_ES[d.getMonth()]}`;
+    }
+
+    const EVENT_PALETTES = [
+      { catBg: 'var(--teal-soft)',    catColor: 'var(--teal)',    dateBg: 'var(--coral-soft)',   dateColor: 'var(--coral)' },
+      { catBg: 'var(--coral-soft)',   catColor: 'var(--coral)',   dateBg: 'var(--mustard-soft)', dateColor: 'var(--mustard)' },
+      { catBg: 'var(--lilac-soft)',   catColor: 'var(--lilac)',   dateBg: 'var(--teal-soft)',    dateColor: 'var(--teal)' },
+      { catBg: 'var(--mustard-soft)', catColor: 'var(--mustard)', dateBg: 'var(--lilac-soft)',   dateColor: 'var(--lilac)' },
+    ];
+
+    /* ─── State for management section ──────────────────────── */
+    const STATE = { aulas: [], eventos: [], horarios: [], notificaciones: [] };
+    let currentTab = 'aulas';
+    let editingId = null;
+
+    /* ─── Loaders ───────────────────────────────────────────── */
     async function loadInfo() {
       try {
-        const data = await getJSON('/info');
-        document.getElementById('stat-version').textContent = data.version;
-        document.getElementById('stat-env').textContent     = data.environment;
-        document.getElementById('stat-host').textContent    = data.hostname;
+        const info = await getJSON('/info');
+        const now = new Date();
+        const dateStr = `${DIA_ES[now.getDay()]} · ${now.getDate()} de ${MES_ES_LONG[now.getMonth()]}`;
+        document.getElementById('hero-date').textContent = dateStr;
+        const hour = now.getHours();
+        const greet = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+        document.querySelector('.hero h1').innerHTML = `${greet},<br /><em id="hero-name">Joshua</em>.`;
 
-        const items = [
-          { label: 'Aplicación',       value: data.app,            icon: '🎓' },
-          { label: 'Versión',          value: data.version,        icon: '🏷️' },
-          { label: 'Entorno',          value: data.environment,    icon: '🌎' },
-          { label: 'Python',           value: data.python_version, icon: '🐍' },
-          { label: 'Hostname',         value: data.hostname,       icon: '🖥️' },
-          { label: 'Última actualización', value: new Date(data.timestamp).toLocaleString('es-MX'), icon: '⏱️' },
-        ];
-
-        const grid = document.getElementById('info-grid');
-        grid.innerHTML = items.map(i => `
-          <div class="rounded-xl bg-white dark:bg-gray-900 p-4 border border-gray-100 dark:border-gray-800 flex items-center gap-3">
-            <div class="text-2xl">${i.icon}</div>
-            <div class="min-w-0">
-              <p class="text-xs uppercase tracking-wider text-gray-500 font-medium">${i.label}</p>
-              <p class="font-semibold truncate">${i.value}</p>
-            </div>
-          </div>
-        `).join('');
+        const pill = document.getElementById('api-pill');
+        pill.classList.remove('error');
+        pill.classList.add('healthy');
+        document.getElementById('api-pill-text').textContent = `${info.environment || 'online'} · v${info.version || '1.0'}`;
       } catch (e) {
-        console.error('Error /info:', e);
+        document.getElementById('api-pill').classList.add('error');
+        document.getElementById('api-pill-text').textContent = 'sin conexión';
       }
     }
 
-    async function loadServicios() {
-      const grid = document.getElementById('servicios-grid');
+    async function loadHorarios() {
       try {
-        const data = await getJSON('/servicios');
-        grid.innerHTML = data.servicios.map(s => `
-          <button data-endpoint="${s.endpoint}" data-icon="${s.icono}" data-title="${s.nombre}"
-                  class="servicio-card group text-left rounded-2xl bg-white dark:bg-gray-900 p-5 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center shadow-md shadow-brand-500/30">
-                ${ICONS[s.icono] || ICONS.building}
-              </div>
-              <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${s.activo ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-100 text-gray-500'}">
-                ${s.activo ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-            <h3 class="font-bold text-base">${s.nombre}</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-snug">${s.descripcion}</p>
-            <div class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 group-hover:gap-2 transition-all">
-              Ver detalles
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </div>
-          </button>
-        `).join('');
+        const data = await getJSON('/horarios');
+        STATE.horarios = data.horarios || [];
+        document.getElementById('count-horarios').textContent = STATE.horarios.length;
 
-        document.querySelectorAll('.servicio-card').forEach(btn => {
-          btn.addEventListener('click', () => openDetalle(btn.dataset.endpoint, btn.dataset.title, btn.dataset.icon));
+        const todayName = DIA_ES[new Date().getDay()];
+        const classes = STATE.horarios.filter(h => h.dia === todayName);
+        const container = document.getElementById('today-list');
+
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+
+        let nextClassMinUntil = null, nextClass = null;
+        classes.forEach(c => {
+          const r = parseRange(c.hora);
+          if (!r || !r.start) return;
+          const sMin = r.start.h * 60 + r.start.m;
+          const eMin = r.end ? r.end.h * 60 + r.end.m : sMin + 90;
+          c._s = sMin; c._e = eMin;
+          if (sMin > nowMin && (nextClassMinUntil === null || sMin - nowMin < nextClassMinUntil)) {
+            nextClassMinUntil = sMin - nowMin;
+            nextClass = c;
+          }
         });
-      } catch (e) {
-        grid.innerHTML = `<div class="col-span-full p-8 text-center text-red-600 bg-red-50 dark:bg-red-900/20 rounded-2xl">Error cargando servicios: ${e.message}</div>`;
-      }
-    }
 
-    // ============================================================
-    // Detalle del servicio
-    // ============================================================
-    async function openDetalle(endpoint, title, iconKey) {
-      const section = document.getElementById('detalle');
-      const body    = document.getElementById('detalle-body');
-      const titleEl = document.getElementById('detalle-title');
-      const epEl    = document.getElementById('detalle-endpoint');
-      const iconEl  = document.getElementById('detalle-icon');
+        const today = new Date();
+        document.getElementById('today-date').textContent = `${DIA_ES[today.getDay()]} ${today.getDate()} de ${MES_ES_LONG[today.getMonth()]}`;
 
-      titleEl.textContent = title;
-      epEl.textContent    = `GET ${endpoint}`;
-      iconEl.innerHTML    = ICONS[iconKey] || ICONS.building;
-      body.innerHTML      = `<div class="flex items-center gap-2 text-gray-500"><div class="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div> Cargando...</div>`;
-      section.classList.remove('hidden');
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      try {
-        const data = await getJSON(endpoint);
-        body.innerHTML = renderByEndpoint(endpoint, data);
-      } catch (e) {
-        body.innerHTML = `<p class="text-red-600">Error: ${e.message}</p>`;
-      }
-    }
-
-    document.getElementById('btn-close-detalle').addEventListener('click', () => {
-      document.getElementById('detalle').classList.add('hidden');
-    });
-
-    // ============================================================
-    // Renderers por endpoint
-    // ============================================================
-    function renderByEndpoint(endpoint, data) {
-      if (endpoint === '/aulas')          return renderAulas(data.aulas);
-      if (endpoint === '/eventos')        return renderEventos(data.eventos);
-      if (endpoint === '/horarios')       return renderHorarios(data.horarios);
-      if (endpoint === '/notificaciones') return renderNotificaciones(data.notificaciones);
-      return `<pre class="text-xs overflow-auto bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">${JSON.stringify(data, null, 2)}</pre>`;
-    }
-
-    function badgeEstado(estado) {
-      const map = {
-        disponible:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-        ocupada:       'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
-        mantenimiento: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-      };
-      return `<span class="text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${map[estado] || 'bg-gray-100 text-gray-600'}">${estado}</span>`;
-    }
-
-    function renderAulas(aulas) {
-      return `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${aulas.map(a => `
-            <div class="rounded-xl border border-gray-100 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-800/40">
-              <div class="flex items-start justify-between mb-2">
-                <div>
-                  <p class="font-bold">${a.id}</p>
-                  <p class="text-xs text-gray-500">${a.edificio}</p>
-                </div>
-                ${badgeEstado(a.estado)}
-              </div>
-              <p class="text-sm font-medium">${a.tipo}</p>
-              <p class="text-xs text-gray-500 mt-1">Capacidad: ${a.capacidad} personas</p>
-              <div class="flex flex-wrap gap-1 mt-3">
-                ${a.equipamiento.map(e => `<span class="text-[10px] uppercase tracking-wider bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-2 py-0.5 rounded">${e}</span>`).join('')}
-              </div>
-            </div>
-          `).join('')}
-        </div>`;
-    }
-
-    function renderEventos(eventos) {
-      return `
-        <ul class="divide-y divide-gray-100 dark:divide-gray-800">
-          ${eventos.map(e => {
-            const fecha = new Date(e.fecha + 'T' + (e.hora || '00:00'));
-            const day   = fecha.getDate();
-            const mon   = fecha.toLocaleString('es-MX', { month: 'short' }).toUpperCase().replace('.', '');
-            return `
-              <li class="py-4 flex items-start gap-4">
-                <div class="flex-shrink-0 w-14 text-center rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 p-2">
-                  <div class="text-2xl font-extrabold leading-none">${day}</div>
-                  <div class="text-[10px] uppercase tracking-wider mt-0.5">${mon}</div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="font-semibold">${e.titulo}</p>
-                  <p class="text-sm text-gray-500 mt-0.5">${e.lugar} · ${e.hora}</p>
-                  <span class="inline-block mt-2 text-[10px] uppercase tracking-wider bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded font-medium">${e.categoria}</span>
-                </div>
-              </li>
-            `;
-          }).join('')}
-        </ul>`;
-    }
-
-    function renderHorarios(horarios) {
-      return `
-        <div class="overflow-x-auto scrollbar-thin">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="text-left text-xs uppercase tracking-wider text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                <th class="pb-3 pr-4">Día</th>
-                <th class="pb-3 pr-4">Hora</th>
-                <th class="pb-3 pr-4">Materia</th>
-                <th class="pb-3 pr-4">Profesor</th>
-                <th class="pb-3">Aula</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-              ${horarios.map(h => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td class="py-3 pr-4 font-medium">${h.dia}</td>
-                  <td class="py-3 pr-4 font-mono text-xs">${h.hora}</td>
-                  <td class="py-3 pr-4">${h.materia}</td>
-                  <td class="py-3 pr-4 text-gray-600 dark:text-gray-400">${h.profesor}</td>
-                  <td class="py-3"><span class="font-mono text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-2 py-0.5 rounded">${h.aula}</span></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>`;
-    }
-
-    function renderNotificaciones(notifs) {
-      const styles = {
-        info:    { bg: 'bg-sky-50 dark:bg-sky-900/30',         border: 'border-sky-200 dark:border-sky-800',         icon: 'ℹ️' },
-        warning: { bg: 'bg-amber-50 dark:bg-amber-900/30',     border: 'border-amber-200 dark:border-amber-800',     icon: '⚠️' },
-        success: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800', icon: '✅' },
-        danger:  { bg: 'bg-rose-50 dark:bg-rose-900/30',       border: 'border-rose-200 dark:border-rose-800',       icon: '🚨' },
-      };
-      return `
-        <div class="space-y-3">
-          ${notifs.map(n => {
-            const s = styles[n.tipo] || styles.info;
-            return `
-              <div class="flex gap-3 p-4 rounded-xl border ${s.bg} ${s.border}">
-                <div class="text-xl">${s.icon}</div>
-                <div class="flex-1">
-                  <div class="flex items-baseline justify-between gap-2">
-                    <p class="font-semibold">${n.titulo}</p>
-                    <p class="text-xs text-gray-500 flex-shrink-0">${n.fecha}</p>
+        if (classes.length === 0) {
+          container.innerHTML = `<div class="empty">No tienes clases programadas hoy. <br/><span style="color:var(--ink-3)">Disfruta tu día libre.</span></div>`;
+          document.getElementById('today-pill').textContent = 'Sin clases';
+        } else {
+          document.getElementById('today-pill').textContent = `${classes.length} ${classes.length === 1 ? 'clase' : 'clases'}`;
+          container.innerHTML = classes
+            .sort((a,b) => a._s - b._s)
+            .map(c => {
+              const r = parseRange(c.hora);
+              const isNow = r && r.start && r.end && nowMin >= c._s && nowMin < c._e;
+              const startStr = r && r.start ? `${String(r.start.h).padStart(2,'0')}:${String(r.start.m).padStart(2,'0')}` : c.hora;
+              const endStr   = r && r.end   ? `${String(r.end.h).padStart(2,'0')}:${String(r.end.m).padStart(2,'0')}`   : '';
+              return `
+                <div class="class-row${isNow ? ' now' : ''}">
+                  <div>
+                    <div class="time-col">${escapeHTML(startStr)}</div>
+                    ${endStr ? `<div class="time-to">${escapeHTML(endStr)}</div>` : ''}
                   </div>
-                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${n.mensaje}</p>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>`;
-    }
+                  <div>
+                    <div class="class-title">${escapeHTML(c.materia)}</div>
+                    <div class="class-sub">
+                      <span>${escapeHTML(c.profesor)}</span>
+                      <span class="room-tag">${escapeHTML(c.aula)}</span>
+                    </div>
+                  </div>
+                  ${isNow ? '<div class="now-chip">AHORA</div>' : ''}
+                </div>`;
+            }).join('');
+        }
 
-    // ============================================================
-    // Live status (polling /health cada 10s)
-    // ============================================================
-    async function checkHealth() {
-      const dot  = document.getElementById('status-dot');
-      const text = document.getElementById('status-text');
-      try {
-        const data = await getJSON('/health');
-        dot.className  = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft';
-        text.textContent = `En línea · ${data.environment}`;
+        document.getElementById('stat-clases').textContent = classes.length;
+        if (nextClass) {
+          const mins = nextClassMinUntil;
+          const label = mins < 60 ? `en ${mins} min` : `en ${Math.floor(mins/60)}h ${mins%60 ? (mins%60)+'m' : ''}`.trim();
+          document.getElementById('stat-clases-sub').textContent = `Próxima ${label}`;
+          document.getElementById('hero-tagline').innerHTML =
+            `Tu próxima clase (${escapeHTML(nextClass.materia)}) empieza <b>${escapeHTML(label)}</b> en ${escapeHTML(nextClass.aula)}.`;
+        } else if (classes.length) {
+          document.getElementById('stat-clases-sub').textContent = 'Todas completas';
+          document.getElementById('hero-tagline').innerHTML =
+            `Ya terminaste tus clases de hoy. Revisa los <b>próximos eventos</b> más abajo.`;
+        } else {
+          document.getElementById('stat-clases-sub').textContent = 'Día libre';
+          document.getElementById('hero-tagline').innerHTML =
+            `Hoy no tienes clases. Aprovecha para <b>reservar un aula</b> o inscribir un evento.`;
+        }
       } catch (e) {
-        dot.className  = 'w-2 h-2 rounded-full bg-red-500';
-        text.textContent = 'Sin conexión';
+        document.getElementById('today-list').innerHTML = `<div class="empty">No se pudo cargar el horario.</div>`;
       }
     }
 
-    // ============================================================
-    // GESTIÓN DE DATOS — esquemas, tabla, modal, CRUD
-    // ============================================================
+    async function loadAulas() {
+      try {
+        const data = await getJSON('/aulas');
+        STATE.aulas = data.aulas || [];
+        document.getElementById('count-aulas').textContent = STATE.aulas.length;
+        const aulas = STATE.aulas;
+        const grid = document.getElementById('aulas-grid');
+        if (aulas.length === 0) {
+          grid.innerHTML = `<div class="empty" style="grid-column:1/-1">No hay aulas registradas.</div>`;
+        } else {
+          grid.innerHTML = aulas.map(a => {
+            const pct = a.estado === 'mantenimiento' ? 0
+              : a.estado === 'ocupada' ? 85
+              : 30;
+            const capLabel = a.estado === 'mantenimiento'
+              ? 'en mantenimiento'
+              : `${a.capacidad} personas · ${a.estado}`;
+            return `
+              <div class="aula">
+                <span class="aula-dot ${escapeHTML(a.estado)}"></span>
+                <div class="aula-code">${escapeHTML(a.id)}</div>
+                <div class="aula-type">${escapeHTML(a.tipo)}</div>
+                <div class="aula-bar"><div class="aula-bar-fill ${escapeHTML(a.estado)}" style="width:${pct}%"></div></div>
+                <div class="aula-cap">${escapeHTML(capLabel)}</div>
+              </div>`;
+          }).join('');
+        }
 
+        const disponibles = aulas.filter(a => a.estado === 'disponible').length;
+        document.getElementById('stat-aulas').innerHTML = `${disponibles}<span class="fraction">/${aulas.length}</span>`;
+        document.getElementById('stat-aulas-sub').textContent = `${aulas.length - disponibles} en uso o mant.`;
+        document.getElementById('quick-aulas-sub').textContent = `${disponibles} ${disponibles === 1 ? 'disponible' : 'disponibles'} ahora`;
+      } catch (e) {
+        document.getElementById('aulas-grid').innerHTML = `<div class="empty" style="grid-column:1/-1">No se pudieron cargar las aulas.</div>`;
+      }
+    }
+
+    async function loadEventos() {
+      try {
+        const data = await getJSON('/eventos');
+        STATE.eventos = data.eventos || [];
+        document.getElementById('count-eventos').textContent = STATE.eventos.length;
+
+        const today = new Date(); today.setHours(0,0,0,0);
+        const upcoming = STATE.eventos
+          .map(e => ({ ...e, _d: new Date(e.fecha + 'T00:00:00') }))
+          .filter(e => e._d >= today)
+          .sort((a,b) => a._d - b._d);
+
+        const list = document.getElementById('eventos-list');
+        if (upcoming.length === 0) {
+          list.innerHTML = `<div class="notif-card empty">No hay eventos próximos.</div>`;
+        } else {
+          list.innerHTML = upcoming.slice(0, 3).map((e, i) => {
+            const p = EVENT_PALETTES[i % EVENT_PALETTES.length];
+            return `
+              <div class="event-card">
+                <div class="event-date" style="background:${p.dateBg};color:${p.dateColor}">
+                  <div class="event-day">${e._d.getDate()}</div>
+                  <div class="event-mon">${MES_ES[e._d.getMonth()]}</div>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="event-title">${escapeHTML(e.titulo)}</div>
+                  <div class="event-meta">
+                    <span>📍 ${escapeHTML(e.lugar)}</span>
+                    <span>${escapeHTML(e.hora)}</span>
+                  </div>
+                  <span class="event-cat" style="background:${p.catBg};color:${p.catColor}">${escapeHTML(e.categoria)}</span>
+                </div>
+              </div>`;
+          }).join('');
+        }
+
+        if (upcoming.length) {
+          const next = upcoming[0];
+          const days = Math.max(0, Math.round((next._d - today) / 86400000));
+          document.getElementById('stat-evento').innerHTML = days === 0
+            ? 'hoy'
+            : `${days}<span class="fraction">d</span>`;
+          document.getElementById('stat-evento-sub').textContent = next.titulo.length > 24
+            ? next.titulo.slice(0, 22) + '…'
+            : next.titulo;
+        } else {
+          document.getElementById('stat-evento').textContent = '—';
+          document.getElementById('stat-evento-sub').textContent = 'Sin eventos próximos';
+        }
+        document.getElementById('quick-eventos-sub').textContent = `${upcoming.length} ${upcoming.length === 1 ? 'abierto' : 'abiertos'}`;
+      } catch (e) {
+        document.getElementById('eventos-list').innerHTML = `<div class="notif-card empty">No se pudieron cargar los eventos.</div>`;
+      }
+    }
+
+    async function loadNotificaciones() {
+      try {
+        const data = await getJSON('/notificaciones');
+        STATE.notificaciones = (data.notificaciones || []).slice().sort((a,b) => (b.fecha || '').localeCompare(a.fecha || ''));
+        document.getElementById('count-notificaciones').textContent = STATE.notificaciones.length;
+        const notifs = STATE.notificaciones;
+        const list = document.getElementById('notif-list');
+
+        const styleMap = {
+          info:    { bg: 'var(--lilac-soft)',   color: 'var(--lilac)',   icon: 'i' },
+          warning: { bg: 'var(--mustard-soft)', color: 'var(--mustard)', icon: '!' },
+          success: { bg: 'var(--teal-soft)',    color: 'var(--teal)',    icon: '✓' },
+          danger:  { bg: 'var(--coral-soft)',   color: 'var(--coral)',   icon: '×' },
+        };
+
+        if (notifs.length === 0) {
+          list.innerHTML = `<div class="empty">Sin avisos nuevos.</div>`;
+        } else {
+          list.innerHTML = notifs.slice(0, 4).map(n => {
+            const s = styleMap[n.tipo] || styleMap.info;
+            return `
+              <div class="notif-row">
+                <div class="notif-icon" style="background:${s.bg};color:${s.color}">${s.icon}</div>
+                <div>
+                  <div class="notif-title">${escapeHTML(n.titulo)}</div>
+                  <div class="notif-msg">${escapeHTML(n.mensaje)}</div>
+                  <div class="notif-time">${relativeFull(n.fecha)}</div>
+                </div>
+              </div>`;
+          }).join('');
+        }
+
+        const urgent = notifs.filter(n => n.tipo === 'danger' || n.tipo === 'warning').length;
+        document.getElementById('stat-avisos').textContent = notifs.length;
+        document.getElementById('stat-avisos-sub').textContent = urgent
+          ? `${urgent} ${urgent === 1 ? 'requiere atención' : 'requieren atención'}`
+          : 'Todos al día';
+      } catch (e) {
+        document.getElementById('notif-list').innerHTML = `<div class="empty">No se pudieron cargar los avisos.</div>`;
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════ */
+    /* ─── Gestión / CRUD ───────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════ */
+
+    // Resource schemas — drive table columns + modal forms
     const RESOURCES = {
-      '/aulas': {
-        nameSingular: 'Aula',
-        namePlural: 'Aulas',
-        listKey: 'aulas',
-        idField: 'id',
-        idAuto: false,                  // el código lo introduce el usuario
-        columns: ['id', 'edificio', 'tipo', 'capacidad', 'estado'],
-        columnLabels: { id: 'Código', edificio: 'Edificio', tipo: 'Tipo', capacidad: 'Cap.', estado: 'Estado' },
-        cellRender: {
-          estado: v => badgeEstado(v),
-        },
+      aulas: {
+        label: 'Aulas',
+        labelSingular: 'aula',
+        articleSingular: 'una',
+        endpoint: '/aulas',
+        idType: 'string',
+        columns: [
+          { key: 'id',          label: 'ID',          render: v => `<span class="mono-cell">${escapeHTML(v)}</span>` },
+          { key: 'edificio',    label: 'Edificio' },
+          { key: 'tipo',        label: 'Tipo' },
+          { key: 'capacidad',   label: 'Cap.', render: v => `<span class="mono-cell">${v}</span>` },
+          { key: 'estado',      label: 'Estado', render: v => `<span class="badge dot ${escapeHTML(v)}">${escapeHTML(v)}</span>` },
+          { key: 'equipamiento',label: 'Equipamiento', render: v => Array.isArray(v) ? v.map(e => `<span class="badge neutral">${escapeHTML(e)}</span>`).join(' ') : '' },
+        ],
         fields: [
-          { name: 'id',           label: 'Código',        type: 'text',   required: true, placeholder: 'A-101', pattern: '[A-Za-z0-9\\-_.]+', help: 'Solo letras, números y - _ .', createOnly: true },
-          { name: 'edificio',     label: 'Edificio',      type: 'text',   required: true, placeholder: 'Edificio A' },
-          { name: 'tipo',         label: 'Tipo',          type: 'text',   required: true, placeholder: 'Aula, Laboratorio, Auditorio...' },
-          { name: 'capacidad',    label: 'Capacidad',     type: 'number', required: true, min: 1 },
-          { name: 'estado',       label: 'Estado',        type: 'select', required: true, options: [
-              { value: 'disponible',    label: 'Disponible' },
-              { value: 'ocupada',       label: 'Ocupada' },
-              { value: 'mantenimiento', label: 'Mantenimiento' },
+          { name: 'id', label: 'ID del aula', type: 'text', placeholder: 'A-101', required: true, hint: 'Letras, números, guiones. Único.', createOnly: true },
+          { name: 'edificio', label: 'Edificio', type: 'text', placeholder: 'Edificio A', required: true },
+          { name: 'tipo', label: 'Tipo', type: 'text', placeholder: 'Aula / Laboratorio / Auditorio', required: true },
+          { name: 'capacidad', label: 'Capacidad', type: 'number', placeholder: '40', required: true, min: 1 },
+          { name: 'estado', label: 'Estado', type: 'select', required: true, options: [
+            { v: 'disponible', l: 'Disponible' },
+            { v: 'ocupada', l: 'Ocupada' },
+            { v: 'mantenimiento', l: 'Mantenimiento' },
           ]},
-          { name: 'equipamiento', label: 'Equipamiento',  type: 'tags',   help: 'Separar con comas. Ej: proyector, pizarra, 30 PCs' },
-        ]
+          { name: 'equipamiento', label: 'Equipamiento', type: 'csv', placeholder: 'proyector, pizarra, a/c', hint: 'Separa por comas.' },
+        ],
+        toPayload: (form, isCreate) => ({
+          ...(isCreate ? { id: form.id.trim() } : {}),
+          edificio: form.edificio.trim(),
+          tipo: form.tipo.trim(),
+          capacidad: Number(form.capacidad),
+          estado: form.estado,
+          equipamiento: String(form.equipamiento || '').split(',').map(s => s.trim()).filter(Boolean),
+        }),
       },
-      '/eventos': {
-        nameSingular: 'Evento',
-        namePlural: 'Eventos',
-        listKey: 'eventos',
-        idField: 'id',
-        idAuto: true,
-        columns: ['id', 'titulo', 'fecha', 'hora', 'lugar', 'categoria'],
-        columnLabels: { id: '#', titulo: 'Título', fecha: 'Fecha', hora: 'Hora', lugar: 'Lugar', categoria: 'Categoría' },
+
+      eventos: {
+        label: 'Eventos',
+        labelSingular: 'evento',
+        articleSingular: 'un',
+        endpoint: '/eventos',
+        idType: 'number',
+        columns: [
+          { key: 'id',        label: 'ID', render: v => `<span class="mono-cell">${v}</span>` },
+          { key: 'titulo',    label: 'Título', render: v => `<span class="strong">${escapeHTML(v)}</span>` },
+          { key: 'fecha',     label: 'Fecha', render: v => `<span class="mono-cell">${escapeHTML(v)}</span>` },
+          { key: 'hora',      label: 'Hora', render: v => `<span class="mono-cell">${escapeHTML(v)}</span>` },
+          { key: 'lugar',     label: 'Lugar' },
+          { key: 'categoria', label: 'Categoría', render: v => `<span class="badge" style="background:var(--lilac-soft);color:var(--lilac)">${escapeHTML(v)}</span>` },
+        ],
         fields: [
-          { name: 'titulo',    label: 'Título',    type: 'text', required: true, placeholder: 'Conferencia de IA' },
-          { name: 'fecha',     label: 'Fecha',     type: 'date', required: true },
-          { name: 'hora',      label: 'Hora',      type: 'time', required: true },
-          { name: 'lugar',     label: 'Lugar',     type: 'text', required: true, placeholder: 'Auditorio C-110' },
-          { name: 'categoria', label: 'Categoría', type: 'text', required: true, placeholder: 'académico, taller, conferencia...' },
-        ]
+          { name: 'titulo',    label: 'Título', type: 'text', placeholder: 'Hackathon 2026', required: true },
+          { name: 'fecha',     label: 'Fecha (YYYY-MM-DD)', type: 'date', required: true },
+          { name: 'hora',      label: 'Hora (HH:MM)', type: 'time', required: true },
+          { name: 'lugar',     label: 'Lugar', type: 'text', placeholder: 'Auditorio C-110', required: true },
+          { name: 'categoria', label: 'Categoría', type: 'text', placeholder: 'académico / taller / conferencia', required: true },
+        ],
+        toPayload: (form) => ({
+          titulo: form.titulo.trim(),
+          fecha: form.fecha,
+          hora: form.hora,
+          lugar: form.lugar.trim(),
+          categoria: form.categoria.trim(),
+        }),
       },
-      '/horarios': {
-        nameSingular: 'Horario',
-        namePlural: 'Horarios',
-        listKey: 'horarios',
-        idField: 'id',
-        idAuto: true,
-        columns: ['id', 'dia', 'hora', 'materia', 'profesor', 'aula'],
-        columnLabels: { id: '#', dia: 'Día', hora: 'Hora', materia: 'Materia', profesor: 'Profesor', aula: 'Aula' },
+
+      horarios: {
+        label: 'Horarios',
+        labelSingular: 'horario',
+        articleSingular: 'un',
+        endpoint: '/horarios',
+        idType: 'number',
+        columns: [
+          { key: 'id',       label: 'ID', render: v => `<span class="mono-cell">${v}</span>` },
+          { key: 'materia',  label: 'Materia', render: v => `<span class="strong">${escapeHTML(v)}</span>` },
+          { key: 'profesor', label: 'Profesor' },
+          { key: 'dia',      label: 'Día' },
+          { key: 'hora',     label: 'Hora', render: v => `<span class="mono-cell">${escapeHTML(v)}</span>` },
+          { key: 'aula',     label: 'Aula', render: v => `<span class="mono-cell">${escapeHTML(v)}</span>` },
+        ],
         fields: [
-          { name: 'materia',  label: 'Materia',  type: 'text',   required: true, placeholder: 'Programación Web' },
-          { name: 'profesor', label: 'Profesor', type: 'text',   required: true, placeholder: 'Ing. R. Pérez' },
-          { name: 'dia',      label: 'Día',      type: 'select', required: true, options: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d => ({ value: d, label: d })) },
-          { name: 'hora',     label: 'Horario',  type: 'text',   required: true, placeholder: '09:00 - 11:00' },
-          { name: 'aula',     label: 'Aula',     type: 'text',   required: true, placeholder: 'B-301' },
-        ]
-      },
-      '/notificaciones': {
-        nameSingular: 'Notificación',
-        namePlural: 'Notificaciones',
-        listKey: 'notificaciones',
-        idField: 'id',
-        idAuto: true,
-        columns: ['id', 'tipo', 'titulo', 'mensaje', 'fecha'],
-        columnLabels: { id: '#', tipo: 'Tipo', titulo: 'Título', mensaje: 'Mensaje', fecha: 'Fecha' },
-        cellRender: {
-          tipo: v => `<span class="text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${
-            { info: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
-              warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-              success: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-              danger: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300' }[v] || 'bg-gray-100 text-gray-600'
-          }">${v}</span>`,
-          mensaje: v => `<span class="text-gray-600 dark:text-gray-400 line-clamp-1">${v}</span>`,
-        },
-        fields: [
-          { name: 'tipo',    label: 'Tipo',    type: 'select', required: true, options: [
-              { value: 'info',    label: 'Información' },
-              { value: 'warning', label: 'Advertencia' },
-              { value: 'success', label: 'Éxito' },
-              { value: 'danger',  label: 'Crítico' },
+          { name: 'materia',  label: 'Materia', type: 'text', placeholder: 'Cálculo Diferencial', required: true },
+          { name: 'profesor', label: 'Profesor', type: 'text', placeholder: 'Dra. M. López', required: true },
+          { name: 'dia',      label: 'Día', type: 'select', required: true, options: [
+            { v: 'Lunes', l: 'Lunes' }, { v: 'Martes', l: 'Martes' }, { v: 'Miércoles', l: 'Miércoles' },
+            { v: 'Jueves', l: 'Jueves' }, { v: 'Viernes', l: 'Viernes' }, { v: 'Sábado', l: 'Sábado' },
           ]},
-          { name: 'titulo',  label: 'Título',  type: 'text',     required: true, placeholder: 'Mantenimiento programado' },
-          { name: 'mensaje', label: 'Mensaje', type: 'textarea', required: true, placeholder: 'Descripción del aviso...' },
-          { name: 'fecha',   label: 'Fecha',   type: 'date',     required: false, help: 'Si se omite se usa la fecha de hoy' },
-        ]
+          { name: 'hora',     label: 'Hora', type: 'text', placeholder: '07:00 - 09:00', required: true, hint: 'Formato libre, p.ej. "08:00 - 10:00".' },
+          { name: 'aula',     label: 'Aula', type: 'text', placeholder: 'A-101', required: true },
+        ],
+        toPayload: (form) => ({
+          materia: form.materia.trim(),
+          profesor: form.profesor.trim(),
+          dia: form.dia,
+          hora: form.hora.trim(),
+          aula: form.aula.trim(),
+        }),
+      },
+
+      notificaciones: {
+        label: 'Notificaciones',
+        labelSingular: 'notificación',
+        articleSingular: 'una',
+        endpoint: '/notificaciones',
+        idType: 'number',
+        columns: [
+          { key: 'id',      label: 'ID', render: v => `<span class="mono-cell">${v}</span>` },
+          { key: 'tipo',    label: 'Tipo', render: v => `<span class="badge dot ${escapeHTML(v)}">${escapeHTML(v)}</span>` },
+          { key: 'titulo',  label: 'Título', render: v => `<span class="strong">${escapeHTML(v)}</span>` },
+          { key: 'mensaje', label: 'Mensaje' },
+          { key: 'fecha',   label: 'Fecha', render: v => `<span class="mono-cell">${escapeHTML(v || '')}</span>` },
+        ],
+        fields: [
+          { name: 'tipo',    label: 'Tipo', type: 'select', required: true, options: [
+            { v: 'info', l: 'Info' }, { v: 'warning', l: 'Warning' },
+            { v: 'success', l: 'Success' }, { v: 'danger', l: 'Danger' },
+          ]},
+          { name: 'titulo',  label: 'Título', type: 'text', placeholder: 'Mantenimiento programado', required: true },
+          { name: 'mensaje', label: 'Mensaje', type: 'textarea', placeholder: 'Detalles del aviso…', required: true },
+          { name: 'fecha',   label: 'Fecha (opcional)', type: 'date', hint: 'Si se omite, se usa la fecha de hoy.' },
+        ],
+        toPayload: (form) => {
+          const out = {
+            tipo: form.tipo,
+            titulo: form.titulo.trim(),
+            mensaje: form.mensaje.trim(),
+          };
+          if (form.fecha) out.fecha = form.fecha;
+          return out;
+        },
       },
     };
 
-    let currentResource = '/aulas';
-
-    // ─── Tabs ─────────────────────────────────────────────
-    function setActiveTab(resource) {
-      currentResource = resource;
-      document.querySelectorAll('.gestion-tab').forEach(t => {
-        const active = t.dataset.resource === resource;
-        t.classList.toggle('text-brand-600', active);
-        t.classList.toggle('dark:text-brand-400', active);
-        t.classList.toggle('border-brand-600', active);
-        t.classList.toggle('dark:border-brand-400', active);
-        t.classList.toggle('text-gray-500', !active);
-      });
-      loadGestionTable();
+    function setTab(name) {
+      currentTab = name;
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+      const r = RESOURCES[name];
+      document.getElementById('btn-create-label').textContent = `Nueva ${r.labelSingular}`;
+      const filt = document.getElementById('table-filter');
+      if (filt) filt.value = '';
+      renderTable();
     }
 
-    document.querySelectorAll('.gestion-tab').forEach(t => {
-      t.addEventListener('click', () => setActiveTab(t.dataset.resource));
-    });
+    function goToGestion(tab) {
+      if (tab) setTab(tab);
+      const el = document.getElementById('gestion');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
-    // ─── Tabla ────────────────────────────────────────────
-    async function loadGestionTable() {
-      const cont = document.getElementById('gestion-table');
-      cont.innerHTML = '<div class="p-8 flex justify-center"><div class="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div></div>';
-      const cfg = RESOURCES[currentResource];
-      try {
-        const data = await getJSON(currentResource);
-        const items = data[cfg.listKey] || [];
-        document.getElementById('gestion-count').textContent = items.length;
+    function renderTable() {
+      const r = RESOURCES[currentTab];
+      const head = document.getElementById('table-head');
+      const body = document.getElementById('table-body');
+      head.innerHTML = '<tr>' + r.columns.map(c => `<th>${escapeHTML(c.label)}</th>`).join('') + '<th style="text-align:right">Acciones</th></tr>';
 
-        if (items.length === 0) {
-          cont.innerHTML = '<div class="p-12 text-center text-gray-500"><p>No hay registros aún.</p><p class="text-sm mt-1">Pulsa <strong>Nuevo</strong> para agregar el primero.</p></div>';
-          return;
-        }
-
-        const cols = cfg.columns;
-        cont.innerHTML = `
-          <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-800/50">
-              <tr class="text-left text-xs uppercase tracking-wider text-gray-500">
-                ${cols.map(c => `<th class="px-4 py-3 font-semibold">${cfg.columnLabels[c] || c}</th>`).join('')}
-                <th class="px-4 py-3 text-right font-semibold">Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-              ${items.map(it => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                  ${cols.map(c => {
-                    const raw = it[c];
-                    const render = cfg.cellRender && cfg.cellRender[c];
-                    const value = render ? render(raw) : (Array.isArray(raw) ? raw.join(', ') : (raw ?? ''));
-                    return `<td class="px-4 py-3 ${c === cfg.idField ? 'font-mono text-xs' : ''}">${value}</td>`;
-                  }).join('')}
-                  <td class="px-4 py-3 text-right whitespace-nowrap">
-                    <button data-action="edit"   data-id='${JSON.stringify(it[cfg.idField])}' class="p-1.5 rounded hover:bg-brand-100 dark:hover:bg-brand-900/40 text-brand-600 dark:text-brand-400 transition" title="Editar">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    </button>
-                    <button data-action="delete" data-id='${JSON.stringify(it[cfg.idField])}' class="p-1.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 transition ml-1" title="Eliminar">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
-                    </button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>`;
-
-        // Bind row actions
-        cont.querySelectorAll('button[data-action]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id     = JSON.parse(btn.dataset.id);
-            const item   = items.find(x => x[cfg.idField] === id);
-            const action = btn.dataset.action;
-            if (action === 'edit')   openEditModal(item);
-            if (action === 'delete') confirmDelete(item);
-          });
-        });
-      } catch (e) {
-        cont.innerHTML = `<div class="p-8 text-center text-rose-600">Error: ${e.message}</div>`;
+      const filterText = (document.getElementById('table-filter').value || '').trim().toLowerCase();
+      let rows = STATE[currentTab] || [];
+      if (filterText) {
+        rows = rows.filter(row => Object.values(row).some(v => {
+          if (Array.isArray(v)) return v.join(' ').toLowerCase().includes(filterText);
+          return String(v ?? '').toLowerCase().includes(filterText);
+        }));
       }
-    }
 
-    // ─── Modal ────────────────────────────────────────────
-    let modalMode = 'create'; // 'create' | 'edit'
-    let modalEditingId = null;
+      if (rows.length === 0) {
+        body.innerHTML = `<tr><td colspan="${r.columns.length + 1}" class="empty">Sin registros.</td></tr>`;
+        return;
+      }
 
-    function openCreateModal() {
-      modalMode = 'create';
-      modalEditingId = null;
-      document.getElementById('modal-title').textContent = `Nuevo ${RESOURCES[currentResource].nameSingular.toLowerCase()}`;
-      document.getElementById('modal-submit-text').textContent = 'Crear';
-      buildModalForm({});
-      showModal();
-    }
-
-    function openEditModal(item) {
-      modalMode = 'edit';
-      const cfg = RESOURCES[currentResource];
-      modalEditingId = item[cfg.idField];
-      document.getElementById('modal-title').textContent = `Editar ${cfg.nameSingular.toLowerCase()}`;
-      document.getElementById('modal-submit-text').textContent = 'Guardar cambios';
-      buildModalForm(item);
-      showModal();
-    }
-
-    function buildModalForm(values) {
-      const cfg = RESOURCES[currentResource];
-      const form = document.getElementById('modal-form');
-      const fields = cfg.fields.filter(f => !(f.createOnly && modalMode === 'edit'));
-
-      form.innerHTML = fields.map(f => {
-        const v = values[f.name];
-        const id = `field-${f.name}`;
-        const required = f.required ? 'required' : '';
-        const baseInput = 'mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm shadow-sm focus:border-brand-500 focus:ring focus:ring-brand-500/20 px-3 py-2';
-        let control = '';
-
-        if (f.type === 'select') {
-          control = `<select id="${id}" name="${f.name}" ${required} class="${baseInput}">
-            <option value="">— Seleccionar —</option>
-            ${f.options.map(o => `<option value="${o.value}" ${o.value === v ? 'selected' : ''}>${o.label}</option>`).join('')}
-          </select>`;
-        } else if (f.type === 'textarea') {
-          control = `<textarea id="${id}" name="${f.name}" rows="3" ${required} placeholder="${f.placeholder || ''}" class="${baseInput}">${v ?? ''}</textarea>`;
-        } else if (f.type === 'tags') {
-          const text = Array.isArray(v) ? v.join(', ') : (v || '');
-          control = `<input id="${id}" name="${f.name}" type="text" value="${text.replace(/"/g, '&quot;')}" placeholder="${f.placeholder || ''}" class="${baseInput}">`;
-        } else {
-          const attrs = [
-            `type="${f.type}"`,
-            f.placeholder ? `placeholder="${f.placeholder}"` : '',
-            f.pattern ? `pattern="${f.pattern}"` : '',
-            f.min !== undefined ? `min="${f.min}"` : '',
-            v !== undefined && v !== null ? `value="${String(v).replace(/"/g, '&quot;')}"` : '',
-          ].filter(Boolean).join(' ');
-          control = `<input id="${id}" name="${f.name}" ${attrs} ${required} class="${baseInput}">`;
-        }
-
+      body.innerHTML = rows.map(row => {
+        const cells = r.columns.map(c => `<td>${c.render ? c.render(row[c.key], row) : escapeHTML(row[c.key] ?? '')}</td>`).join('');
+        const idVal = row.id;
+        const idAttr = typeof idVal === 'string' ? `'${String(idVal).replace(/'/g, "\\'")}'` : idVal;
         return `
-          <div>
-            <label for="${id}" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              ${f.label}${f.required ? ' <span class="text-rose-500">*</span>' : ''}
-            </label>
-            ${control}
-            ${f.help ? `<p class="text-xs text-gray-500 mt-1">${f.help}</p>` : ''}
-          </div>
-        `;
+          <tr>
+            ${cells}
+            <td style="text-align:right">
+              <div class="row-actions">
+                <button class="row-btn" title="Editar" onclick="openEditModal(${idAttr})">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4z"/></svg>
+                </button>
+                <button class="row-btn danger" title="Eliminar" onclick="confirmDelete(${idAttr})">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>`;
       }).join('');
     }
 
-    function showModal() {
-      document.getElementById('modal').classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-      const first = document.querySelector('#modal-form input, #modal-form select, #modal-form textarea');
-      if (first) setTimeout(() => first.focus(), 50);
+    /* ─── Modal ─────────────────────────────────────────────── */
+    function buildModalForm(resource, prefill = {}, isCreate = true) {
+      const fieldsHost = document.getElementById('form-fields');
+      const fields = resource.fields.filter(f => isCreate || !f.createOnly);
+
+      const html = [];
+      let i = 0;
+      while (i < fields.length) {
+        const f = fields[i];
+        const next = fields[i+1];
+        const pair = (f.type === 'date' && next && next.type === 'time');
+        if (pair) {
+          html.push(`<div class="form-grid-2">${renderField(f, prefill)}${renderField(next, prefill)}</div>`);
+          i += 2;
+        } else {
+          html.push(renderField(f, prefill));
+          i++;
+        }
+      }
+      fieldsHost.innerHTML = html.join('');
     }
 
-    function hideModal() {
-      document.getElementById('modal').classList.add('hidden');
-      document.body.style.overflow = '';
+    function renderField(f, prefill) {
+      const val = prefill[f.name];
+      const valStr = Array.isArray(val) ? val.join(', ') : (val ?? '');
+      const required = f.required ? 'required' : '';
+      let inputHTML = '';
+      switch (f.type) {
+        case 'textarea':
+          inputHTML = `<textarea name="${f.name}" placeholder="${escapeHTML(f.placeholder || '')}" ${required}>${escapeHTML(valStr)}</textarea>`;
+          break;
+        case 'select':
+          inputHTML = `<select name="${f.name}" ${required}>
+            <option value="">Selecciona…</option>
+            ${(f.options || []).map(o => `<option value="${escapeHTML(o.v)}" ${String(o.v) === String(val) ? 'selected' : ''}>${escapeHTML(o.l)}</option>`).join('')}
+          </select>`;
+          break;
+        case 'number':
+          inputHTML = `<input type="number" name="${f.name}" placeholder="${escapeHTML(f.placeholder || '')}" value="${escapeHTML(valStr)}" ${f.min !== undefined ? `min="${f.min}"` : ''} ${required} />`;
+          break;
+        case 'date':
+        case 'time':
+          inputHTML = `<input type="${f.type}" name="${f.name}" value="${escapeHTML(valStr)}" ${required} />`;
+          break;
+        case 'csv':
+        case 'text':
+        default:
+          inputHTML = `<input type="text" name="${f.name}" placeholder="${escapeHTML(f.placeholder || '')}" value="${escapeHTML(valStr)}" ${required} />`;
+      }
+      return `
+        <div class="form-row">
+          <label>${escapeHTML(f.label)}${f.required ? ' *' : ''}</label>
+          ${inputHTML}
+          ${f.hint ? `<div class="hint">${escapeHTML(f.hint)}</div>` : ''}
+        </div>`;
     }
 
-    document.getElementById('modal-close').addEventListener('click', hideModal);
-    document.getElementById('modal-cancel').addEventListener('click', hideModal);
-    document.getElementById('modal-backdrop').addEventListener('click', hideModal);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !document.getElementById('modal').classList.contains('hidden')) hideModal();
+    function openCreateModal() {
+      const r = RESOURCES[currentTab];
+      editingId = null;
+      document.getElementById('modal-title').innerHTML = `Nueva <em>${escapeHTML(r.labelSingular)}</em>`;
+      document.getElementById('modal-sub').textContent = `Completa los campos para crear ${r.articleSingular} ${r.labelSingular}.`;
+      document.getElementById('form-error').classList.remove('show');
+      buildModalForm(r, {}, true);
+      document.getElementById('modal-backdrop').classList.add('open');
+      setTimeout(() => {
+        const first = document.querySelector('#form-fields input, #form-fields select, #form-fields textarea');
+        first && first.focus();
+      }, 50);
+    }
+
+    function openEditModal(id) {
+      const r = RESOURCES[currentTab];
+      const item = (STATE[currentTab] || []).find(x => String(x.id) === String(id));
+      if (!item) return;
+      editingId = id;
+      document.getElementById('modal-title').innerHTML = `Editar <em>${escapeHTML(r.labelSingular)}</em>`;
+      document.getElementById('modal-sub').textContent = `Modifica los campos y guarda los cambios.`;
+      document.getElementById('form-error').classList.remove('show');
+      buildModalForm(r, item, false);
+      document.getElementById('modal-backdrop').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.remove('open');
+      editingId = null;
+    }
+
+    function onBackdropClick(e) {
+      if (e.target.id === 'modal-backdrop') closeModal();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
     });
 
-    // ─── Submit ───────────────────────────────────────────
-    document.getElementById('modal-submit').addEventListener('click', async (e) => {
-      const form = document.getElementById('modal-form');
-      if (!form.checkValidity()) { form.reportValidity(); return; }
+    async function submitForm(ev) {
+      ev.preventDefault();
+      const r = RESOURCES[currentTab];
+      const isCreate = editingId === null;
+      const formEl = document.getElementById('modal-form');
+      const data = {};
+      new FormData(formEl).forEach((v, k) => { data[k] = v; });
 
-      const cfg = RESOURCES[currentResource];
-      const fd = new FormData(form);
-      const payload = {};
-      cfg.fields
-        .filter(f => !(f.createOnly && modalMode === 'edit'))
-        .forEach(f => {
-          let val = fd.get(f.name);
-          if (val === null || val === '') {
-            if (f.type === 'tags') { payload[f.name] = []; return; }
-            if (!f.required) return;          // omitir opcionales vacíos
-          }
-          if (f.type === 'number')   val = Number(val);
-          if (f.type === 'tags')     val = String(val).split(',').map(s => s.trim()).filter(Boolean);
-          payload[f.name] = val;
-        });
+      let payload;
+      try { payload = r.toPayload(data, isCreate); }
+      catch (err) {
+        showFormError(err.message || 'Datos inválidos.');
+        return;
+      }
 
-      const submitBtn = document.getElementById('modal-submit');
-      const spinner   = document.getElementById('modal-submit-spinner');
+      const submitBtn = document.getElementById('form-submit');
       submitBtn.disabled = true;
-      spinner.classList.remove('hidden');
-
+      submitBtn.style.opacity = '.6';
       try {
-        let url, method;
-        if (modalMode === 'create') {
-          url = currentResource;
-          method = 'POST';
+        if (isCreate) {
+          await sendJSON('POST', r.endpoint, payload);
+          toast('success', `${r.labelSingular} creada`, `Se agregó correctamente.`);
         } else {
-          url = `${currentResource}/${encodeURIComponent(modalEditingId)}`;
-          method = 'PUT';
+          await sendJSON('PUT', `${r.endpoint}/${encodeURIComponent(editingId)}`, payload);
+          toast('success', `${r.labelSingular} actualizada`, `Cambios guardados.`);
         }
-        const res = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
-          throw new Error(typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail));
-        }
-        toast(modalMode === 'create' ? 'Registro creado' : 'Cambios guardados', 'success');
-        hideModal();
-        loadGestionTable();
-        // Si el detalle del servicio está abierto y es del mismo recurso, refrescarlo
-        const detalleEp = document.getElementById('detalle-endpoint').textContent.replace('GET ', '');
-        if (detalleEp === currentResource && !document.getElementById('detalle').classList.contains('hidden')) {
-          openDetalle(currentResource, document.getElementById('detalle-title').textContent, RESOURCES[currentResource].listKey === 'aulas' ? 'building' : RESOURCES[currentResource].listKey === 'eventos' ? 'calendar' : RESOURCES[currentResource].listKey === 'horarios' ? 'clock' : 'bell');
-        }
-      } catch (err) {
-        toast('Error: ' + err.message, 'error');
+        closeModal();
+        await reloadCurrent();
+      } catch (e) {
+        showFormError(e.message || 'Error desconocido');
       } finally {
         submitBtn.disabled = false;
-        spinner.classList.add('hidden');
+        submitBtn.style.opacity = '';
       }
-    });
+    }
 
-    // ─── Delete ───────────────────────────────────────────
-    async function confirmDelete(item) {
-      const cfg = RESOURCES[currentResource];
-      const id = item[cfg.idField];
-      const label = item.titulo || item.nombre || item.materia || item.id || `#${id}`;
-      if (!confirm(`¿Eliminar "${label}"?\n\nEsta acción no se puede deshacer.`)) return;
+    function showFormError(msg) {
+      const el = document.getElementById('form-error');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
 
+    async function confirmDelete(id) {
+      const r = RESOURCES[currentTab];
+      if (!confirm(`¿Eliminar ${r.labelSingular} "${id}"? Esta acción no se puede deshacer.`)) return;
       try {
-        const res = await fetch(`${currentResource}/${encodeURIComponent(id)}`, { method: 'DELETE' });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
-          throw new Error(typeof err.detail === 'string' ? err.detail : 'Error al eliminar');
-        }
-        toast('Registro eliminado', 'success');
-        loadGestionTable();
-      } catch (err) {
-        toast('Error: ' + err.message, 'error');
+        await sendJSON('DELETE', `${r.endpoint}/${encodeURIComponent(id)}`);
+        toast('success', `${r.labelSingular} eliminada`, `ID ${id} fue removido.`);
+        await reloadCurrent();
+      } catch (e) {
+        toast('error', 'No se pudo eliminar', e.message);
       }
     }
 
-    // ─── Toast ────────────────────────────────────────────
-    function toast(message, type = 'info') {
-      const colors = {
-        success: 'bg-emerald-600',
-        error:   'bg-rose-600',
-        info:    'bg-gray-800',
-      };
-      const el = document.createElement('div');
-      el.className = `pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${colors[type] || colors.info} animate-slide-up`;
-      el.textContent = message;
-      document.getElementById('toast-container').appendChild(el);
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.3s';
-        el.style.opacity = '0';
-        setTimeout(() => el.remove(), 300);
-      }, 3000);
+    async function reloadCurrent() {
+      switch (currentTab) {
+        case 'aulas':          await loadAulas(); break;
+        case 'eventos':        await loadEventos(); break;
+        case 'horarios':       await loadHorarios(); break;
+        case 'notificaciones': await loadNotificaciones(); break;
+      }
+      renderTable();
     }
 
-    // ─── Botones de la sección ────────────────────────────
-    document.getElementById('gestion-create').addEventListener('click', openCreateModal);
-    document.getElementById('gestion-refresh').addEventListener('click', loadGestionTable);
+    /* ─── Toast ─────────────────────────────────────────────── */
+    function toast(type, title, msg) {
+      const stack = document.getElementById('toast-stack');
+      const el = document.createElement('div');
+      el.className = `toast ${type === 'error' ? 'error' : type === 'warn' ? 'warn' : ''}`;
+      el.innerHTML = `<div class="toast-title">${escapeHTML(title)}</div>${msg ? `<div class="toast-msg">${escapeHTML(msg)}</div>` : ''}`;
+      stack.appendChild(el);
+      setTimeout(() => {
+        el.classList.add('leaving');
+        setTimeout(() => el.remove(), 250);
+      }, 3500);
+    }
 
-    // ============================================================
-    // Bootstrap
-    // ============================================================
-    document.getElementById('year').textContent = new Date().getFullYear();
-    document.getElementById('btn-refresh-services').addEventListener('click', loadServicios);
-
-    loadRoot();
-    loadInfo();
-    loadServicios();
-    setActiveTab('/aulas');
-    checkHealth();
-    setInterval(checkHealth, 10000);
+    /* ─── Boot ──────────────────────────────────────────────── */
+    async function load() {
+      await loadInfo();
+      await Promise.all([loadHorarios(), loadAulas(), loadEventos(), loadNotificaciones()]);
+      setTab('aulas');
+    }
+    load();
   </script>
 </body>
 </html>

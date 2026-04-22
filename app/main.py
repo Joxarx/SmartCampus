@@ -19,7 +19,7 @@ from datetime import timezone
 app = FastAPI(
     title="SmartCampus Services",
     description="API + Dashboard para gestión de servicios universitarios",
-    version="1.2.0"
+    version="1.3.0"
 )
 
 # CORS — abierto para demo. En producción restringir por dominio.
