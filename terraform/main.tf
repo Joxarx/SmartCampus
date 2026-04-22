@@ -175,6 +175,7 @@ resource "aws_instance" "app" {
 resource "aws_ecr_repository" "smartcampus" {
   name                 = var.ecr_repo_name
   image_tag_mutability = "MUTABLE" # Permite sobreescribir el tag :latest
+  force_delete         = true      # Permite borrar el repo aunque tenga imágenes
 
   # Escaneo automático de vulnerabilidades al hacer push de imagen
   image_scanning_configuration {
