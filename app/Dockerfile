@@ -53,8 +53,9 @@ EXPOSE 8000
 
 # Health check interno del contenedor
 # Docker verifica cada 30s si la app responde correctamente
+# Valida explícitamente status 200 - si la app responde 4xx/5xx falla
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    CMD python -c "import urllib.request,sys; r=urllib.request.urlopen('http://localhost:8000/health',timeout=4); sys.exit(0 if r.status==200 else 1)"
 
 # Comando de inicio: servidor Uvicorn con recarga en dev
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
