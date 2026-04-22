@@ -69,7 +69,10 @@ resource "aws_iam_instance_profile" "vault_profile" {
 # ── EC2: Instancia Vault (misma AMI y tipo que la app) ────────
 # Usa la misma AMI (Amazon Linux 2023) definida en main.tf.
 # Ansible (site.yml) se encarga de instalar y configurar Vault completamente.
+# Solo se crea si vault_key_name está definido (no vacío).
 resource "aws_instance" "vault" {
+  count = var.vault_key_name != "" ? 1 : 0
+
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = local.instance_type
   subnet_id              = module.vpc.public_subnets[0]
@@ -96,25 +99,25 @@ resource "aws_instance" "vault" {
 # ── OUTPUTS: Info de la instancia Vault ──────────────────────
 output "vault_public_ip" {
   description = "IP pública de la instancia Vault — úsala en ansible/inventory/hosts.ini"
-  value       = aws_instance.vault.public_ip
+  value       = length(aws_instance.vault) > 0 ? aws_instance.vault[0].public_ip : "Vault no desplegado (vault_key_name vacío)"
 }
 
 output "vault_url" {
   description = "URL de la API y UI de HashiCorp Vault"
-  value       = "http://${aws_instance.vault.public_ip}:8200"
+  value       = length(aws_instance.vault) > 0 ? "http://${aws_instance.vault[0].public_ip}:8200" : "Vault no desplegado"
 }
 
 output "vault_instance_id" {
   description = "ID de la instancia EC2 de Vault"
-  value       = aws_instance.vault.id
+  value       = length(aws_instance.vault) > 0 ? aws_instance.vault[0].id : "Vault no desplegado"
 }
 
 output "vault_ssh_command" {
   description = "Comando SSH para conectarse a la instancia Vault"
-  value       = "ssh -i ~/.ssh/<tu-key.pem> ec2-user@${aws_instance.vault.public_ip}"
+  value       = length(aws_instance.vault) > 0 ? "ssh -i ~/.ssh/<tu-key.pem> ec2-user@${aws_instance.vault[0].public_ip}" : "Vault no desplegado"
 }
 
 output "vault_ansible_inventory_line" {
   description = "Línea lista para pegar en ansible/inventory/hosts.ini"
-  value       = "vault_server ansible_host=${aws_instance.vault.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/<tu-key.pem>"
+  value       = length(aws_instance.vault) > 0 ? "vault_server ansible_host=${aws_instance.vault[0].public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/<tu-key.pem>" : "Vault no desplegado"
 }

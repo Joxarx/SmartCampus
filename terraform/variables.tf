@@ -73,8 +73,9 @@ variable "ecr_repo_name" {
 # Nombre del par de claves SSH para la instancia Vault.
 # Requerido: Ansible necesita SSH para provisionar Vault.
 variable "vault_key_name" {
-  description = "Nombre del par de claves SSH en AWS para la instancia Vault (requerido para Ansible)"
+  description = "Nombre del par de claves SSH en AWS para la instancia Vault (vacío = Vault deshabilitado)"
   type        = string
+  default     = ""
 }
 
 # CIDR que puede conectarse por SSH al servidor Vault.
