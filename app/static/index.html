@@ -110,10 +110,15 @@
           <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
         </button>
 
+        <a href="#gestion"
+           class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Gestión
+        </a>
         <a href="/docs" target="_blank" rel="noopener"
            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          API Docs
+          API
         </a>
       </div>
     </div>
@@ -212,6 +217,84 @@
       <!-- Llenado dinámicamente -->
     </div>
   </section>
+
+  <!-- ─────────── GESTIÓN DE DATOS (CRUD) ─────────── -->
+  <section id="gestion" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 scroll-mt-24">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+      <div>
+        <h2 class="text-2xl font-bold flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </span>
+          Gestión de datos
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Crea, edita y elimina registros directamente en la API.
+          <span class="ml-1 text-amber-600 dark:text-amber-400">⚠ Los cambios se reinician al redespliegar el contenedor.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-gray-200 dark:border-gray-800 mb-6 overflow-x-auto scrollbar-thin">
+      <div id="gestion-tabs" class="inline-flex gap-1 min-w-max">
+        <button data-resource="/aulas"          class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Aulas</button>
+        <button data-resource="/eventos"        class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Eventos</button>
+        <button data-resource="/horarios"       class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Horarios</button>
+        <button data-resource="/notificaciones" class="gestion-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 dark:hover:text-brand-400 transition">Notificaciones</button>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex items-center justify-between mb-4 gap-2">
+      <div class="text-sm text-gray-500 dark:text-gray-400">
+        <span id="gestion-count">—</span> registros
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="gestion-refresh" type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refrescar
+        </button>
+        <button id="gestion-create" type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition shadow shadow-brand-500/30">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Nuevo
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div id="gestion-table" class="overflow-x-auto scrollbar-thin">
+        <div class="p-8 text-center text-gray-500">Selecciona una pestaña arriba</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── MODAL ─────────── -->
+  <div id="modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div id="modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"></div>
+    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-lg max-h-[90vh] flex flex-col animate-slide-up">
+      <header class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <h3 id="modal-title" class="text-lg font-bold">—</h3>
+        <button id="modal-close" type="button" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <form id="modal-form" class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin"></form>
+      <footer class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-2 bg-gray-50 dark:bg-gray-900/60 rounded-b-2xl">
+        <button type="button" id="modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">Cancelar</button>
+        <button type="button" id="modal-submit" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span id="modal-submit-spinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <span id="modal-submit-text">Guardar</span>
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ─────────── TOAST ─────────── -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- ─────────── FOOTER ─────────── -->
   <footer class="border-t border-gray-200 dark:border-gray-800 mt-10 py-8">
@@ -505,6 +588,368 @@
     }
 
     // ============================================================
+    // GESTIÓN DE DATOS — esquemas, tabla, modal, CRUD
+    // ============================================================
+
+    const RESOURCES = {
+      '/aulas': {
+        nameSingular: 'Aula',
+        namePlural: 'Aulas',
+        listKey: 'aulas',
+        idField: 'id',
+        idAuto: false,                  // el código lo introduce el usuario
+        columns: ['id', 'edificio', 'tipo', 'capacidad', 'estado'],
+        columnLabels: { id: 'Código', edificio: 'Edificio', tipo: 'Tipo', capacidad: 'Cap.', estado: 'Estado' },
+        cellRender: {
+          estado: v => badgeEstado(v),
+        },
+        fields: [
+          { name: 'id',           label: 'Código',        type: 'text',   required: true, placeholder: 'A-101', pattern: '[A-Za-z0-9\\-_.]+', help: 'Solo letras, números y - _ .', createOnly: true },
+          { name: 'edificio',     label: 'Edificio',      type: 'text',   required: true, placeholder: 'Edificio A' },
+          { name: 'tipo',         label: 'Tipo',          type: 'text',   required: true, placeholder: 'Aula, Laboratorio, Auditorio...' },
+          { name: 'capacidad',    label: 'Capacidad',     type: 'number', required: true, min: 1 },
+          { name: 'estado',       label: 'Estado',        type: 'select', required: true, options: [
+              { value: 'disponible',    label: 'Disponible' },
+              { value: 'ocupada',       label: 'Ocupada' },
+              { value: 'mantenimiento', label: 'Mantenimiento' },
+          ]},
+          { name: 'equipamiento', label: 'Equipamiento',  type: 'tags',   help: 'Separar con comas. Ej: proyector, pizarra, 30 PCs' },
+        ]
+      },
+      '/eventos': {
+        nameSingular: 'Evento',
+        namePlural: 'Eventos',
+        listKey: 'eventos',
+        idField: 'id',
+        idAuto: true,
+        columns: ['id', 'titulo', 'fecha', 'hora', 'lugar', 'categoria'],
+        columnLabels: { id: '#', titulo: 'Título', fecha: 'Fecha', hora: 'Hora', lugar: 'Lugar', categoria: 'Categoría' },
+        fields: [
+          { name: 'titulo',    label: 'Título',    type: 'text', required: true, placeholder: 'Conferencia de IA' },
+          { name: 'fecha',     label: 'Fecha',     type: 'date', required: true },
+          { name: 'hora',      label: 'Hora',      type: 'time', required: true },
+          { name: 'lugar',     label: 'Lugar',     type: 'text', required: true, placeholder: 'Auditorio C-110' },
+          { name: 'categoria', label: 'Categoría', type: 'text', required: true, placeholder: 'académico, taller, conferencia...' },
+        ]
+      },
+      '/horarios': {
+        nameSingular: 'Horario',
+        namePlural: 'Horarios',
+        listKey: 'horarios',
+        idField: 'id',
+        idAuto: true,
+        columns: ['id', 'dia', 'hora', 'materia', 'profesor', 'aula'],
+        columnLabels: { id: '#', dia: 'Día', hora: 'Hora', materia: 'Materia', profesor: 'Profesor', aula: 'Aula' },
+        fields: [
+          { name: 'materia',  label: 'Materia',  type: 'text',   required: true, placeholder: 'Programación Web' },
+          { name: 'profesor', label: 'Profesor', type: 'text',   required: true, placeholder: 'Ing. R. Pérez' },
+          { name: 'dia',      label: 'Día',      type: 'select', required: true, options: ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d => ({ value: d, label: d })) },
+          { name: 'hora',     label: 'Horario',  type: 'text',   required: true, placeholder: '09:00 - 11:00' },
+          { name: 'aula',     label: 'Aula',     type: 'text',   required: true, placeholder: 'B-301' },
+        ]
+      },
+      '/notificaciones': {
+        nameSingular: 'Notificación',
+        namePlural: 'Notificaciones',
+        listKey: 'notificaciones',
+        idField: 'id',
+        idAuto: true,
+        columns: ['id', 'tipo', 'titulo', 'mensaje', 'fecha'],
+        columnLabels: { id: '#', tipo: 'Tipo', titulo: 'Título', mensaje: 'Mensaje', fecha: 'Fecha' },
+        cellRender: {
+          tipo: v => `<span class="text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${
+            { info: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+              warning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+              success: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+              danger: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300' }[v] || 'bg-gray-100 text-gray-600'
+          }">${v}</span>`,
+          mensaje: v => `<span class="text-gray-600 dark:text-gray-400 line-clamp-1">${v}</span>`,
+        },
+        fields: [
+          { name: 'tipo',    label: 'Tipo',    type: 'select', required: true, options: [
+              { value: 'info',    label: 'Información' },
+              { value: 'warning', label: 'Advertencia' },
+              { value: 'success', label: 'Éxito' },
+              { value: 'danger',  label: 'Crítico' },
+          ]},
+          { name: 'titulo',  label: 'Título',  type: 'text',     required: true, placeholder: 'Mantenimiento programado' },
+          { name: 'mensaje', label: 'Mensaje', type: 'textarea', required: true, placeholder: 'Descripción del aviso...' },
+          { name: 'fecha',   label: 'Fecha',   type: 'date',     required: false, help: 'Si se omite se usa la fecha de hoy' },
+        ]
+      },
+    };
+
+    let currentResource = '/aulas';
+
+    // ─── Tabs ─────────────────────────────────────────────
+    function setActiveTab(resource) {
+      currentResource = resource;
+      document.querySelectorAll('.gestion-tab').forEach(t => {
+        const active = t.dataset.resource === resource;
+        t.classList.toggle('text-brand-600', active);
+        t.classList.toggle('dark:text-brand-400', active);
+        t.classList.toggle('border-brand-600', active);
+        t.classList.toggle('dark:border-brand-400', active);
+        t.classList.toggle('text-gray-500', !active);
+      });
+      loadGestionTable();
+    }
+
+    document.querySelectorAll('.gestion-tab').forEach(t => {
+      t.addEventListener('click', () => setActiveTab(t.dataset.resource));
+    });
+
+    // ─── Tabla ────────────────────────────────────────────
+    async function loadGestionTable() {
+      const cont = document.getElementById('gestion-table');
+      cont.innerHTML = '<div class="p-8 flex justify-center"><div class="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div></div>';
+      const cfg = RESOURCES[currentResource];
+      try {
+        const data = await getJSON(currentResource);
+        const items = data[cfg.listKey] || [];
+        document.getElementById('gestion-count').textContent = items.length;
+
+        if (items.length === 0) {
+          cont.innerHTML = '<div class="p-12 text-center text-gray-500"><p>No hay registros aún.</p><p class="text-sm mt-1">Pulsa <strong>Nuevo</strong> para agregar el primero.</p></div>';
+          return;
+        }
+
+        const cols = cfg.columns;
+        cont.innerHTML = `
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800/50">
+              <tr class="text-left text-xs uppercase tracking-wider text-gray-500">
+                ${cols.map(c => `<th class="px-4 py-3 font-semibold">${cfg.columnLabels[c] || c}</th>`).join('')}
+                <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              ${items.map(it => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                  ${cols.map(c => {
+                    const raw = it[c];
+                    const render = cfg.cellRender && cfg.cellRender[c];
+                    const value = render ? render(raw) : (Array.isArray(raw) ? raw.join(', ') : (raw ?? ''));
+                    return `<td class="px-4 py-3 ${c === cfg.idField ? 'font-mono text-xs' : ''}">${value}</td>`;
+                  }).join('')}
+                  <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <button data-action="edit"   data-id='${JSON.stringify(it[cfg.idField])}' class="p-1.5 rounded hover:bg-brand-100 dark:hover:bg-brand-900/40 text-brand-600 dark:text-brand-400 transition" title="Editar">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </button>
+                    <button data-action="delete" data-id='${JSON.stringify(it[cfg.idField])}' class="p-1.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 transition ml-1" title="Eliminar">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>`;
+
+        // Bind row actions
+        cont.querySelectorAll('button[data-action]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id     = JSON.parse(btn.dataset.id);
+            const item   = items.find(x => x[cfg.idField] === id);
+            const action = btn.dataset.action;
+            if (action === 'edit')   openEditModal(item);
+            if (action === 'delete') confirmDelete(item);
+          });
+        });
+      } catch (e) {
+        cont.innerHTML = `<div class="p-8 text-center text-rose-600">Error: ${e.message}</div>`;
+      }
+    }
+
+    // ─── Modal ────────────────────────────────────────────
+    let modalMode = 'create'; // 'create' | 'edit'
+    let modalEditingId = null;
+
+    function openCreateModal() {
+      modalMode = 'create';
+      modalEditingId = null;
+      document.getElementById('modal-title').textContent = `Nuevo ${RESOURCES[currentResource].nameSingular.toLowerCase()}`;
+      document.getElementById('modal-submit-text').textContent = 'Crear';
+      buildModalForm({});
+      showModal();
+    }
+
+    function openEditModal(item) {
+      modalMode = 'edit';
+      const cfg = RESOURCES[currentResource];
+      modalEditingId = item[cfg.idField];
+      document.getElementById('modal-title').textContent = `Editar ${cfg.nameSingular.toLowerCase()}`;
+      document.getElementById('modal-submit-text').textContent = 'Guardar cambios';
+      buildModalForm(item);
+      showModal();
+    }
+
+    function buildModalForm(values) {
+      const cfg = RESOURCES[currentResource];
+      const form = document.getElementById('modal-form');
+      const fields = cfg.fields.filter(f => !(f.createOnly && modalMode === 'edit'));
+
+      form.innerHTML = fields.map(f => {
+        const v = values[f.name];
+        const id = `field-${f.name}`;
+        const required = f.required ? 'required' : '';
+        const baseInput = 'mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm shadow-sm focus:border-brand-500 focus:ring focus:ring-brand-500/20 px-3 py-2';
+        let control = '';
+
+        if (f.type === 'select') {
+          control = `<select id="${id}" name="${f.name}" ${required} class="${baseInput}">
+            <option value="">— Seleccionar —</option>
+            ${f.options.map(o => `<option value="${o.value}" ${o.value === v ? 'selected' : ''}>${o.label}</option>`).join('')}
+          </select>`;
+        } else if (f.type === 'textarea') {
+          control = `<textarea id="${id}" name="${f.name}" rows="3" ${required} placeholder="${f.placeholder || ''}" class="${baseInput}">${v ?? ''}</textarea>`;
+        } else if (f.type === 'tags') {
+          const text = Array.isArray(v) ? v.join(', ') : (v || '');
+          control = `<input id="${id}" name="${f.name}" type="text" value="${text.replace(/"/g, '&quot;')}" placeholder="${f.placeholder || ''}" class="${baseInput}">`;
+        } else {
+          const attrs = [
+            `type="${f.type}"`,
+            f.placeholder ? `placeholder="${f.placeholder}"` : '',
+            f.pattern ? `pattern="${f.pattern}"` : '',
+            f.min !== undefined ? `min="${f.min}"` : '',
+            v !== undefined && v !== null ? `value="${String(v).replace(/"/g, '&quot;')}"` : '',
+          ].filter(Boolean).join(' ');
+          control = `<input id="${id}" name="${f.name}" ${attrs} ${required} class="${baseInput}">`;
+        }
+
+        return `
+          <div>
+            <label for="${id}" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              ${f.label}${f.required ? ' <span class="text-rose-500">*</span>' : ''}
+            </label>
+            ${control}
+            ${f.help ? `<p class="text-xs text-gray-500 mt-1">${f.help}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showModal() {
+      document.getElementById('modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      const first = document.querySelector('#modal-form input, #modal-form select, #modal-form textarea');
+      if (first) setTimeout(() => first.focus(), 50);
+    }
+
+    function hideModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-close').addEventListener('click', hideModal);
+    document.getElementById('modal-cancel').addEventListener('click', hideModal);
+    document.getElementById('modal-backdrop').addEventListener('click', hideModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('modal').classList.contains('hidden')) hideModal();
+    });
+
+    // ─── Submit ───────────────────────────────────────────
+    document.getElementById('modal-submit').addEventListener('click', async (e) => {
+      const form = document.getElementById('modal-form');
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
+      const cfg = RESOURCES[currentResource];
+      const fd = new FormData(form);
+      const payload = {};
+      cfg.fields
+        .filter(f => !(f.createOnly && modalMode === 'edit'))
+        .forEach(f => {
+          let val = fd.get(f.name);
+          if (val === null || val === '') {
+            if (f.type === 'tags') { payload[f.name] = []; return; }
+            if (!f.required) return;          // omitir opcionales vacíos
+          }
+          if (f.type === 'number')   val = Number(val);
+          if (f.type === 'tags')     val = String(val).split(',').map(s => s.trim()).filter(Boolean);
+          payload[f.name] = val;
+        });
+
+      const submitBtn = document.getElementById('modal-submit');
+      const spinner   = document.getElementById('modal-submit-spinner');
+      submitBtn.disabled = true;
+      spinner.classList.remove('hidden');
+
+      try {
+        let url, method;
+        if (modalMode === 'create') {
+          url = currentResource;
+          method = 'POST';
+        } else {
+          url = `${currentResource}/${encodeURIComponent(modalEditingId)}`;
+          method = 'PUT';
+        }
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          throw new Error(typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail));
+        }
+        toast(modalMode === 'create' ? 'Registro creado' : 'Cambios guardados', 'success');
+        hideModal();
+        loadGestionTable();
+        // Si el detalle del servicio está abierto y es del mismo recurso, refrescarlo
+        const detalleEp = document.getElementById('detalle-endpoint').textContent.replace('GET ', '');
+        if (detalleEp === currentResource && !document.getElementById('detalle').classList.contains('hidden')) {
+          openDetalle(currentResource, document.getElementById('detalle-title').textContent, RESOURCES[currentResource].listKey === 'aulas' ? 'building' : RESOURCES[currentResource].listKey === 'eventos' ? 'calendar' : RESOURCES[currentResource].listKey === 'horarios' ? 'clock' : 'bell');
+        }
+      } catch (err) {
+        toast('Error: ' + err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // ─── Delete ───────────────────────────────────────────
+    async function confirmDelete(item) {
+      const cfg = RESOURCES[currentResource];
+      const id = item[cfg.idField];
+      const label = item.titulo || item.nombre || item.materia || item.id || `#${id}`;
+      if (!confirm(`¿Eliminar "${label}"?\n\nEsta acción no se puede deshacer.`)) return;
+
+      try {
+        const res = await fetch(`${currentResource}/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          throw new Error(typeof err.detail === 'string' ? err.detail : 'Error al eliminar');
+        }
+        toast('Registro eliminado', 'success');
+        loadGestionTable();
+      } catch (err) {
+        toast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // ─── Toast ────────────────────────────────────────────
+    function toast(message, type = 'info') {
+      const colors = {
+        success: 'bg-emerald-600',
+        error:   'bg-rose-600',
+        info:    'bg-gray-800',
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${colors[type] || colors.info} animate-slide-up`;
+      el.textContent = message;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.3s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3000);
+    }
+
+    // ─── Botones de la sección ────────────────────────────
+    document.getElementById('gestion-create').addEventListener('click', openCreateModal);
+    document.getElementById('gestion-refresh').addEventListener('click', loadGestionTable);
+
+    // ============================================================
     // Bootstrap
     // ============================================================
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -513,6 +958,7 @@
     loadRoot();
     loadInfo();
     loadServicios();
+    setActiveTab('/aulas');
     checkHealth();
     setInterval(checkHealth, 10000);
   </script>

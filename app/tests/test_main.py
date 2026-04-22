@@ -83,3 +83,88 @@ def test_notificaciones_returns_list():
     assert data["total"] == len(data["notificaciones"])
     for notif in data["notificaciones"]:
         assert notif["tipo"] in {"info", "warning", "success", "danger"}
+
+
+# ─── CRUD: AULAS ────────────────────────────────────────────
+
+def test_aula_crud_lifecycle():
+    nueva = {
+        "id": "TEST-999",
+        "edificio": "Edificio Test",
+        "tipo": "Sala de Pruebas",
+        "capacidad": 5,
+        "estado": "disponible",
+        "equipamiento": ["pizarra"],
+    }
+    # Create
+    r = client.post("/aulas", json=nueva)
+    assert r.status_code == 201
+    assert r.json()["id"] == "TEST-999"
+
+    # Conflict on duplicate
+    r2 = client.post("/aulas", json=nueva)
+    assert r2.status_code == 409
+
+    # Update
+    actualizada = {**nueva, "estado": "ocupada", "capacidad": 8}
+    actualizada.pop("id")
+    r3 = client.put("/aulas/TEST-999", json=actualizada)
+    assert r3.status_code == 200
+    assert r3.json()["estado"] == "ocupada"
+    assert r3.json()["capacidad"] == 8
+
+    # Delete
+    r4 = client.delete("/aulas/TEST-999")
+    assert r4.status_code == 200
+
+    # 404 después de borrar
+    r5 = client.put("/aulas/TEST-999", json=actualizada)
+    assert r5.status_code == 404
+
+
+def test_aula_validation_rejects_invalid_estado():
+    bad = {
+        "id": "BAD-001",
+        "edificio": "X",
+        "tipo": "X",
+        "capacidad": 10,
+        "estado": "inventado",
+        "equipamiento": [],
+    }
+    r = client.post("/aulas", json=bad)
+    assert r.status_code == 422
+
+
+# ─── CRUD: EVENTOS ──────────────────────────────────────────
+
+def test_evento_create_update_delete():
+    payload = {
+        "titulo": "Evento de prueba",
+        "fecha": "2026-12-31",
+        "hora": "23:59",
+        "lugar": "Lugar de prueba",
+        "categoria": "test",
+    }
+    r = client.post("/eventos", json=payload)
+    assert r.status_code == 201
+    eid = r.json()["id"]
+
+    r2 = client.put(f"/eventos/{eid}", json={**payload, "titulo": "Renombrado"})
+    assert r2.status_code == 200
+    assert r2.json()["titulo"] == "Renombrado"
+
+    r3 = client.delete(f"/eventos/{eid}")
+    assert r3.status_code == 200
+    assert r3.json()["deleted"] == eid
+
+
+# ─── CRUD: NOTIFICACIONES ───────────────────────────────────
+
+def test_notificacion_create_autofecha():
+    payload = {"tipo": "info", "titulo": "Prueba", "mensaje": "msg"}
+    r = client.post("/notificaciones", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    assert body["fecha"]  # auto-asignada
+    # Cleanup
+    client.delete(f"/notificaciones/{body['id']}")
