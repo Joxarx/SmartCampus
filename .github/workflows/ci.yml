@@ -24,6 +24,8 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: smartcampus-services
   IMAGE_NAME: smartcampus-app
+  # Silencia warnings de deprecation de Node.js 20 en GitHub Actions
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   # ── JOB 1: Tests y Linting ──────────────────────────────
@@ -83,7 +85,12 @@ jobs:
     name: 🐳 Build & Push a Amazon ECR
     runs-on: ubuntu-latest
     needs: test  # Solo se ejecuta si los tests pasan
-    
+
+    # Vault es opcional: si VAULT_ADDR está configurado se usa,
+    # si no, caemos a AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY de GitHub Secrets.
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+
     outputs:
       # Exporta la URL de la imagen para usarla en el pipeline CD
       image-uri: ${{ steps.build-image.outputs.image-uri }}
@@ -102,11 +109,13 @@ jobs:
           echo "tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
           echo "Image tag: ${SHORT_SHA}"
 
+      # Solo corre si VAULT_ADDR está definido en GitHub Secrets
       - name: 🔓 Leer secretos desde Vault
+        if: env.VAULT_ADDR != ''
         uses: hashicorp/vault-action@v3
         id: vault-secrets
         with:
-          url: ${{ secrets.VAULT_ADDR }}
+          url: ${{ env.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
             secret/data/smartcampus/aws AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID
@@ -115,8 +124,9 @@ jobs:
       - name: 🔐 Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ steps.vault-secrets.outputs.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ steps.vault-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+          # Si Vault está disponible usa sus outputs; si no, usa secrets directos
+          aws-access-key-id: ${{ steps.vault-secrets.outputs.AWS_ACCESS_KEY_ID || secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ steps.vault-secrets.outputs.AWS_SECRET_ACCESS_KEY || secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       # Autentica Docker contra ECR para poder hacer push
