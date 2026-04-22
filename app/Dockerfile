@@ -41,7 +41,7 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 
 # Copiamos el código fuente de la aplicación
-COPY main.py .
+COPY . .
 
 # Creamos un usuario no-root por seguridad.
 # Nunca ejecutar contenedores como root en producción.

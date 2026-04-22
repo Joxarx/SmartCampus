@@ -44,7 +44,7 @@ jobs:
           url: ${{ secrets.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
-            secret/data/smartcampus/aws AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/smartcampus/aws AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID
             secret/data/smartcampus/aws AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY
 
       - name: 🔐 Configurar credenciales AWS
@@ -140,7 +140,7 @@ jobs:
 
           # Esperar hasta 60 segundos para que el contenedor esté listo
           for i in {1..12}; do
-            if curl -sf "http://${PUBLIC_IP}:8000/health" > /dev/null 2>&1; then
+            if curl -sf --max-time 5 "http://${PUBLIC_IP}:8000/health" > /dev/null 2>&1; then
               echo "✅ La aplicación responde correctamente"
               curl -s "http://${PUBLIC_IP}:8000/health"
               echo "public-ip=${PUBLIC_IP}" >> $GITHUB_ENV
@@ -158,5 +158,5 @@ jobs:
           echo "| **Instancia EC2** | \`${{ steps.ec2.outputs.instance-id }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Image URI** | \`${{ steps.image-tag.outputs.image-uri }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Image Tag** | \`${{ steps.image-tag.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **App URL** | http://${public_ip}:8000 |" >> $GITHUB_STEP_SUMMARY
+          echo "| **App URL** | http://${{ env.public-ip }}:8000 |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
