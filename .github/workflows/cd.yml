@@ -25,6 +25,11 @@ env:
   # Silencia warnings de deprecation de Node.js 20 en GitHub Actions
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+# Necesario para OIDC: el job emite un token JWT que AWS valida para asumir el rol IAM.
+permissions:
+  id-token: write
+  contents: read
+
 # Evita despliegues duplicados (push + pull_request closed)
 # y corridas paralelas en producción.
 concurrency:
@@ -41,33 +46,17 @@ jobs:
     environment: production  # Requiere aprobación manual en GitHub
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
 
-    # Vault es opcional: si VAULT_ADDR está configurado se usa,
-    # si no, caemos a AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY de GitHub Secrets.
-    env:
-      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-
     steps:
       - name: 📥 Checkout del código
         uses: actions/checkout@v4
 
-      # Solo corre si VAULT_ADDR está definido en GitHub Secrets
-      - name: 🔓 Leer secretos desde Vault
-        if: env.VAULT_ADDR != ''
-        uses: hashicorp/vault-action@v3
-        id: vault-secrets
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          token: ${{ secrets.VAULT_TOKEN }}
-          secrets: |
-            secret/data/smartcampus/aws AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID
-            secret/data/smartcampus/aws AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY
-
-      - name: 🔐 Configurar credenciales AWS
+      # OIDC: AWS emite credenciales temporales sin claves de larga vida.
+      # El rol está definido en terraform/github_oidc.tf.
+      - name: 🔐 Configurar credenciales AWS via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # Si Vault está disponible usa sus outputs; si no, usa secrets directos
-          aws-access-key-id: ${{ steps.vault-secrets.outputs.AWS_ACCESS_KEY_ID || secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ steps.vault-secrets.outputs.AWS_SECRET_ACCESS_KEY || secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::815470165507:role/smartcampus-github-actions
+          role-session-name: gh-actions-cd-${{ github.run_id }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: 🔑 Login a Amazon ECR

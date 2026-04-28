@@ -71,11 +71,19 @@ aws ssm send-command \
   --query 'Command.CommandId' --output text
 ```
 
-## Required Secrets (GitHub Actions)
+## GitHub Actions auth (OIDC, no static secrets)
 
-`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` — used in `.github/workflows/ci.yml:87-89`
-and `.github/workflows/cd.yml:43-45`. The CD pipeline also requires a `production` environment
-configured in GitHub with manual approval rules.
+CI and CD authenticate to AWS via **OpenID Connect**, not access keys. The IAM
+role + GitHub OIDC provider are provisioned by `terraform/github_oidc.tf` and
+the role ARN is hardcoded in both workflows
+(`arn:aws:iam::815470165507:role/smartcampus-github-actions`). Trust is
+restricted to the repo via the `sub` claim (see `var.github_repo`).
+
+The CD pipeline also requires a `production` environment configured in GitHub
+with manual approval rules.
+
+To rotate or move accounts: change `var.github_repo` (or the AWS account),
+`terraform apply`, then update the role ARN in both workflow files.
 
 ## Key File References
 
@@ -83,9 +91,10 @@ configured in GitHub with manual approval rules.
 - Global AWS resource tags: `terraform/provider.tf:37-44`
 - EC2 instance definition + user_data bootstrap: `terraform/main.tf:124-170`
 - ECR lifecycle policy (keeps 10 images): `terraform/main.tf:192-207`
+- GitHub Actions OIDC provider + IAM role: `terraform/github_oidc.tf`
 - Health check endpoint (used by Docker HEALTHCHECK): `app/main.py:34-49`
 - Non-root container user setup: `app/Dockerfile:48-49`
-- CD deploy via SSM send-command: `.github/workflows/cd.yml:89-116`
+- CD deploy via SSM send-command: `.github/workflows/cd.yml`
 
 ## Additional Documentation
 

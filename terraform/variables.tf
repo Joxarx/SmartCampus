@@ -68,6 +68,13 @@ variable "ecr_repo_name" {
   default     = "smartcampus-services"
 }
 
+# ── GITHUB OIDC: Repo autorizado a asumir el rol de CI/CD ────
+variable "github_repo" {
+  description = "Repo de GitHub autorizado a asumir el rol IAM via OIDC (formato OWNER/REPO)"
+  type        = string
+  default     = "Joxarx/SmartCampus"
+}
+
 # ── VAULT: Variables para la instancia HashiCorp Vault ───────
 
 # Nombre del par de claves SSH para la instancia Vault.
