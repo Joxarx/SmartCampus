@@ -114,12 +114,15 @@ jobs:
             --arg tag "$IMAGE_TAG" \
             '{
               commands: [
+                "set -euo pipefail",
                 ("aws ecr get-login-password --region " + $region + " | docker login --username AWS --password-stdin " + $registry),
                 ("docker pull " + $image),
-                "docker stop smartcampus || true",
-                "docker rm smartcampus || true",
+                "docker stop smartcampus 2>/dev/null || true",
+                "docker rm smartcampus 2>/dev/null || true",
                 ("docker run -d --name smartcampus --restart unless-stopped -p 8000:8000 -e ENVIRONMENT=production -e APP_VERSION=" + $tag + " " + $image),
-                "docker ps --filter name=smartcampus"
+                "sleep 2",
+                "docker ps --filter name=smartcampus --format \"table {{.Names}}\\t{{.Status}}\\t{{.Image}}\"",
+                "test -n \"$(docker ps -q --filter name=smartcampus)\" || { echo \"❌ smartcampus container is not running after deploy\"; exit 1; }"
               ]
             }')
 

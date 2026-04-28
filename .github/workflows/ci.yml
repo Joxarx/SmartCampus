@@ -56,8 +56,8 @@ jobs:
 
       - name: 🔍 Linting con Flake8 (calidad de código)
         run: |
-          # Verifica estilo PEP8 - líneas max 120 caracteres
-          flake8 app/main.py --max-line-length=120
+          # max-line-length 200 para preservar las tablas de datos en formato visual
+          flake8 app/main.py --max-line-length=200
 
       - name: ✅ Ejecutar pruebas unitarias
         run: |

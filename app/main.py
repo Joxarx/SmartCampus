@@ -69,7 +69,7 @@ _state = {
         {"id": 3, "materia": "Bases de Datos",        "profesor": "Dr. J. Hernández",  "dia": "Martes",    "hora": "10:00 - 12:00", "aula": "B-301"},
         {"id": 4, "materia": "Redes de Computadoras", "profesor": "Mtro. A. Ramírez",  "dia": "Miércoles", "hora": "08:00 - 10:00", "aula": "B-302"},
         {"id": 5, "materia": "DevOps y Cloud",        "profesor": "Ing. J. Arias",     "dia": "Jueves",    "hora": "16:00 - 18:00", "aula": "B-301"},
-        {"id": 6, "materia": "Inteligencia Artificial","profesor": "Dra. S. García",    "dia": "Viernes",   "hora": "11:00 - 13:00", "aula": "A-205"},
+        {"id": 6, "materia": "Inteligencia Artificial", "profesor": "Dra. S. García",   "dia": "Viernes",   "hora": "11:00 - 13:00", "aula": "A-205"},
     ],
     "notificaciones": [
         {"id": 1, "tipo": "info",    "titulo": "Mantenimiento programado", "mensaje": "El sistema estará en mantenimiento el sábado 02:00-04:00.", "fecha": "2026-04-21"},
@@ -205,7 +205,7 @@ def listar_servicios():
         {"id": 1, "nombre": "Reservación de Aulas",         "descripcion": "Reserva salas y laboratorios del campus",         "endpoint": "/aulas",          "icono": "building", "activo": True},
         {"id": 2, "nombre": "Gestión de Eventos",           "descripcion": "Consulta y registro de eventos académicos",       "endpoint": "/eventos",        "icono": "calendar", "activo": True},
         {"id": 3, "nombre": "Consulta de Horarios",         "descripcion": "Visualiza horarios de clases y profesores",       "endpoint": "/horarios",       "icono": "clock",    "activo": True},
-        {"id": 4, "nombre": "Notificaciones Institucionales","descripcion": "Sistema de alertas y comunicados oficiales",      "endpoint": "/notificaciones", "icono": "bell",     "activo": True},
+        {"id": 4, "nombre": "Notificaciones Institucionales", "descripcion": "Sistema de alertas y comunicados oficiales",     "endpoint": "/notificaciones", "icono": "bell",     "activo": True},
     ]
     return {"total": len(servicios), "servicios": servicios}
 
